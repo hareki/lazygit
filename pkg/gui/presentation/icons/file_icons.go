@@ -12,9 +12,9 @@ import (
 // https://github.com/nvim-tree/nvim-web-devicons/tree/master/lua/nvim-web-devicons/default
 
 var (
-	DEFAULT_FILE_ICON      = IconProperties{Icon: "\uf15b", Color: "#878787"}     // 
+	DEFAULT_FILE_ICON      = IconProperties{Icon: "\uf15b", Color: "#cdd6f4	"}     // 
 	DEFAULT_SUBMODULE_ICON = IconProperties{Icon: "\U000f02a2", Color: "#FF4F00"} // 󰊢
-	DEFAULT_DIRECTORY_ICON = IconProperties{Icon: "\uf07b", Color: "#878787"}     // 
+	DEFAULT_DIRECTORY_ICON = IconProperties{Icon: "\uf07b", Color: "#89b4fa	"}     // 
 )
 
 // NOTE: The filename map is case sensitive.
