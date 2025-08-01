@@ -124,7 +124,11 @@ func Start(buildInfo *BuildInfo, integrationTest integrationTypes.IntegrationTes
 		os.Exit(0)
 	}
 
-	tempDir, err := os.MkdirTemp("", "lazygit-*")
+	tmpDirBase := filepath.Join(os.TempDir(), "lazygit")
+	if err := os.MkdirAll(tmpDirBase, 0o700); err != nil {
+		log.Fatal(err.Error())
+	}
+	tempDir, err := os.MkdirTemp(tmpDirBase, "")
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -137,6 +141,9 @@ func Start(buildInfo *BuildInfo, integrationTest integrationTypes.IntegrationTes
 
 	if integrationTest != nil {
 		integrationTest.SetupConfig(appConfig)
+		// Set this to true so that integration tests don't have to explicitly deal with the hunk
+		// staging hint:
+		appConfig.GetAppState().DidShowHunkStagingHint = true
 
 		// Preserve the changes that the test setup just made to the config, so
 		// they don't get lost when we reload the config while running the test
