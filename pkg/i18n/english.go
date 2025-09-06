@@ -611,6 +611,7 @@ type TranslationSet struct {
 	MustStashWarning                      string
 	MustStashTitle                        string
 	ConfirmationTitle                     string
+	PromptTitle                           string
 	PrevPage                              string
 	NextPage                              string
 	GotoTop                               string
@@ -1011,6 +1012,9 @@ type Actions struct {
 	UpdateRemote                     string
 	ApplyPatch                       string
 	Stash                            string
+	PopStash                         string
+	ApplyStash                       string
+	DropStash                        string
 	RenameStash                      string
 	RemoveSubmodule                  string
 	ResetSubmodule                   string
@@ -1689,6 +1693,7 @@ func EnglishTranslationSet() *TranslationSet {
 		MustStashWarning:                 "Pulling a patch out into the index requires stashing and unstashing your changes. If something goes wrong, you'll be able to access your files from the stash. Continue?",
 		MustStashTitle:                   "Must stash",
 		ConfirmationTitle:                "Confirmation panel",
+		PromptTitle:                      "Input prompt",
 		PrevPage:                         "Previous page",
 		NextPage:                         "Next page",
 		GotoTop:                          "Scroll to top",
@@ -2050,6 +2055,9 @@ func EnglishTranslationSet() *TranslationSet {
 			UpdateRemote:                     "Update remote",
 			ApplyPatch:                       "Apply patch",
 			Stash:                            "Stash",
+			PopStash:                         "Pop stash",
+			ApplyStash:                       "Apply stash",
+			DropStash:                        "Drop stash",
 			RenameStash:                      "Rename stash",
 			RemoveSubmodule:                  "Remove submodule",
 			ResetSubmodule:                   "Reset submodule",
