@@ -15,9 +15,11 @@ import (
 )
 
 const (
-	EXPANDED_ARROW  = "▼"
-	COLLAPSED_ARROW = "▶"
+	EXPANDED_ARROW  = ""
+	COLLAPSED_ARROW = ""
 )
+
+var directoryArrowStyle = style.New().SetFg(style.NewRGBColor(color.HEX("#6C7086", false)))
 
 func RenderFileTree(
 	tree filetree.IFileTree,
@@ -146,9 +148,7 @@ func getFileLine(
 			arrow = COLLAPSED_ARROW
 		}
 
-		arrowStyle := nameColor
-
-		output += arrowStyle.Sprint(arrow) + " "
+		output += directoryArrowStyle.Sprint(arrow) + " "
 	} else {
 		// Sprinting the space at the end in the specific style is for the sake of
 		// when a reverse style is used in the theme, which looks ugly if you just
@@ -250,7 +250,7 @@ func getCommitFileLine(
 			arrow = COLLAPSED_ARROW
 		}
 
-		output += nameColor.Sprint(arrow) + " "
+		output += directoryArrowStyle.Sprint(arrow) + " "
 	} else {
 		var symbol string
 		symbolStyle := nameColor
