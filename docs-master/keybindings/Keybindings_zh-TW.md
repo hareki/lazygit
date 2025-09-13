@@ -47,6 +47,8 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 | `` v `` | 切換拖曳選擇 |  |
 | `` <shift+down> `` | 向下擴充套件選擇範圍 |  |
 | `` <shift+up> `` | 向上擴充套件選擇範圍 |  |
+| `` <left> `` | Collapse directory / go to parent |  |
+| `` <right> `` | Expand directory |  |
 | `` / `` | 搜尋 |  |
 | `` H `` | 向左捲動 |  |
 | `` L `` | 向右捲動 |  |
