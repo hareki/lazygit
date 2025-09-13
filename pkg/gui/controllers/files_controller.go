@@ -143,6 +143,20 @@ func (self *FilesController) GetKeybindings(opts types.KeybindingsOpts) []*types
 			Tooltip:           self.c.Tr.FileEnterTooltip,
 		},
 		{
+			Key:               opts.GetKey(opts.Config.Files.CollapseDirectory),
+			Handler:           self.collapseDirectory,
+			GetDisabledReason: self.require(self.singleItemSelected(), self.isInTreeMode),
+			Description:       "Collapse directory / go to parent",
+			Tag:               "navigation",
+		},
+		{
+			Key:               opts.GetKey(opts.Config.Files.ExpandDirectory),
+			Handler:           self.expandDirectory,
+			GetDisabledReason: self.require(self.singleItemSelected(), self.isInTreeMode),
+			Description:       "Expand directory",
+			Tag:               "navigation",
+		},
+		{
 			Key:               opts.GetKey(opts.Config.Universal.Remove),
 			Handler:           self.withItems(self.remove),
 			GetDisabledReason: self.withFileTreeViewModelMutex(self.require(self.itemsSelected(self.canRemove))),
@@ -537,6 +551,92 @@ func (self *FilesController) expandAll() error {
 	self.c.PostRefreshUpdate(self.context())
 
 	return nil
+}
+
+// isDirectoryOrHasParent returns true if the selected node is a directory, or
+// if it's a file that has a parent directory (always true except for root).
+func (self *FilesController) isDirectoryOrHasParent(node *filetree.FileNode) bool {
+	if node == nil {
+		return false
+	}
+	// If node is a directory
+	if node.File == nil {
+		return true
+	}
+	// Files always have a path with at least one segment; if there is a '/', there's a parent.
+	return strings.Contains(node.GetPath(), "/")
+}
+
+// collapseDirectory collapses the selected directory. If the selected node is a file,
+// it will move selection to the parent directory; if that directory is expanded, it will collapse it.
+func (self *FilesController) collapseDirectory() error {
+	if !self.context().FileTreeViewModel.InTreeMode() {
+		return nil
+	}
+
+	node := self.context().GetSelected()
+	if node == nil {
+		return nil
+	}
+
+	// Only act on directories. If it's a file, do nothing.
+	if node.File == nil {
+		path := node.GetInternalPath()
+		if self.context().FileTreeViewModel.IsCollapsed(path) {
+			// move to parent directory if possible
+			parentPath := parentDir(path)
+			if parentPath != "" {
+				if idx, ok := self.context().FileTreeViewModel.GetIndexForPath(parentPath); ok {
+					self.context().SetSelectedLineIdx(idx)
+				}
+			}
+		} else {
+			self.context().FileTreeViewModel.ToggleCollapsed(path)
+			self.c.PostRefreshUpdate(self.c.Contexts().Files)
+		}
+		return nil
+	}
+	return nil
+}
+
+// expandDirectory expands the selected directory. If the selected node is a file,
+// expand its parent directory.
+func (self *FilesController) expandDirectory() error {
+	if !self.context().FileTreeViewModel.InTreeMode() {
+		return nil
+	}
+
+	node := self.context().GetSelected()
+	if node == nil {
+		return nil
+	}
+
+	// Only act on directories. If it's a file, do nothing.
+	if node.File == nil {
+		// If directory is collapsed, expand it; if already expanded, do nothing
+		path := node.GetInternalPath()
+		if self.context().FileTreeViewModel.IsCollapsed(path) {
+			self.context().FileTreeViewModel.ToggleCollapsed(path)
+			self.c.PostRefreshUpdate(self.c.Contexts().Files)
+		}
+		return nil
+	}
+	return nil
+}
+
+// parentDir returns the parent directory internal path for a given internal path
+func parentDir(internalPath string) string {
+	if internalPath == "" || internalPath == "." {
+		return ""
+	}
+	// internal paths are like "./" for root or "./dir/subdir"
+	// remove trailing slash if any and split
+	p := strings.TrimSuffix(internalPath, "/")
+	idx := strings.LastIndex(p, "/")
+	if idx <= 1 { // handles "./name" returning "."
+		return "./"
+	}
+	return p[:idx]
 }
 
 func (self *FilesController) EnterFile(opts types.OnFocusOpts) error {
