@@ -57,6 +57,10 @@ func (config *UserConfig) Validate() error {
 	if err := validateDiffRenderers(config.Git.DiffRenderers); err != nil {
 		return err
 	}
+	if err := validateEnum("gui.cursorStyle", config.Gui.CursorStyle,
+		[]string{"", "default", "blinkingBlock", "steadyBlock", "blinkingUnderline", "steadyUnderline", "blinkingBar", "steadyBar"}); err != nil {
+		return err
+	}
 	if err := validateKeybindings(config.Keybinding); err != nil {
 		return err
 	}
