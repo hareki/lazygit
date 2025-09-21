@@ -196,6 +196,9 @@ type GuiConfig struct {
 	SwitchToFilesAfterStashApply bool `yaml:"switchToFilesAfterStashApply"`
 	// If true, when using the panel jump keys (default 1 through 5) and target panel is already active, go to next tab instead
 	SwitchTabsWithPanelJumpKeys bool `yaml:"switchTabsWithPanelJumpKeys"`
+	// Cursor style for text inputs and editable areas.
+	// One of: '' (default terminal setting) | 'default' | 'blinkingBlock' | 'steadyBlock' | 'blinkingUnderline' | 'steadyUnderline' | 'blinkingBar' | 'steadyBar'
+	CursorStyle string `yaml:"cursorStyle" jsonschema:"enum=,enum=default,enum=blinkingBlock,enum=steadyBlock,enum=blinkingUnderline,enum=steadyUnderline,enum=blinkingBar,enum=steadyBar"`
 }
 
 func (c *GuiConfig) UseFuzzySearch() bool {
@@ -823,6 +826,7 @@ func GetDefaultConfig() *UserConfig {
 			SwitchToFilesAfterStashPop:   true,
 			SwitchToFilesAfterStashApply: true,
 			SwitchTabsWithPanelJumpKeys:  false,
+			CursorStyle:                  "",
 		},
 		Git: GitConfig{
 			Commit: CommitConfig{

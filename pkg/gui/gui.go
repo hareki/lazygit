@@ -14,6 +14,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/gdamore/tcell/v2"
 	"github.com/jesseduffield/gocui"
 	"github.com/jesseduffield/lazycore/pkg/boxlayout"
 	appTypes "github.com/jesseduffield/lazygit/pkg/app/types"
@@ -838,6 +839,23 @@ func (gui *Gui) Run(startArgs appTypes.StartArgs) error {
 	}
 
 	gui.g = g
+	// Apply configured cursor style if specified
+	switch strings.ToLower(gui.Config.GetUserConfig().Gui.CursorStyle) {
+	case "", "default":
+		// leave terminal default
+	case "blinkingblock":
+		gui.g.SetCursorStyle(tcell.CursorStyleBlinkingBlock)
+	case "steadyblock":
+		gui.g.SetCursorStyle(tcell.CursorStyleSteadyBlock)
+	case "blinkingunderline":
+		gui.g.SetCursorStyle(tcell.CursorStyleBlinkingUnderline)
+	case "steadyunderline":
+		gui.g.SetCursorStyle(tcell.CursorStyleSteadyUnderline)
+	case "blinkingbar":
+		gui.g.SetCursorStyle(tcell.CursorStyleBlinkingBar)
+	case "steadybar":
+		gui.g.SetCursorStyle(tcell.CursorStyleSteadyBar)
+	}
 	defer gui.g.Close()
 
 	g.ErrorHandler = gui.PopupHandler.ErrorHandler

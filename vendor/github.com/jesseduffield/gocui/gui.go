@@ -205,6 +205,16 @@ type Gui struct {
 	lastHoverView *View
 }
 
+// SetCursorStyle forces a global cursor style (shape + blink) if the terminal supports it.
+// This wraps tcell's SetCursorStyle so callers outside the gocui package don't need direct access
+// to the underlying screen implementation. If unsupported, the call is a no-op.
+func (g *Gui) SetCursorStyle(style tcell.CursorStyle) {
+	if g == nil || g.screen == nil {
+		return
+	}
+	g.screen.SetCursorStyle(style, tcell.ColorDefault)
+}
+
 type NewGuiOpts struct {
 	OutputMode      OutputMode
 	SupportOverlaps bool
