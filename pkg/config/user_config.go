@@ -490,7 +490,7 @@ type KeybindingFilesConfig struct {
 	ViewResetOptions         string `yaml:"viewResetOptions"`
 	Fetch                    string `yaml:"fetch"`
 	ToggleTreeView           string `yaml:"toggleTreeView"`
-	OpenMergeTool            string `yaml:"openMergeTool"`
+	OpenMergeOptions         string `yaml:"openMergeOptions"`
 	OpenStatusFilter         string `yaml:"openStatusFilter"`
 	CopyFileInfoToClipboard  string `yaml:"copyFileInfoToClipboard"`
 	CollapseAll              string `yaml:"collapseAll"`
@@ -956,7 +956,7 @@ func GetDefaultConfig() *UserConfig {
 				ViewResetOptions:         "D",
 				Fetch:                    "f",
 				ToggleTreeView:           "`",
-				OpenMergeTool:            "M",
+				OpenMergeOptions:         "M",
 				OpenStatusFilter:         "<c-b>",
 				ConfirmDiscard:           "x",
 				CopyFileInfoToClipboard:  "y",
