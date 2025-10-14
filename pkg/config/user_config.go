@@ -84,6 +84,8 @@ type GuiConfig struct {
 	SkipNoStagedFilesWarning bool `yaml:"skipNoStagedFilesWarning"`
 	// If true, do not show a warning when rewording a commit via an external editor
 	SkipRewordInEditorWarning bool `yaml:"skipRewordInEditorWarning"`
+	// If true, switch to a different worktree without confirmation when checking out a branch that is checked out in that worktree
+	SkipSwitchWorktreeOnCheckoutWarning bool `yaml:"skipSwitchWorktreeOnCheckoutWarning"`
 	// Fraction of the total screen width to use for the left side section. You may want to pick a small number (e.g. 0.2) if you're using a narrow screen, so that you can see more of the main section.
 	// Number from 0 to 1.0.
 	SidePanelWidth float64 `yaml:"sidePanelWidth" jsonschema:"maximum=1,minimum=0"`
@@ -236,8 +238,30 @@ type SpinnerConfig struct {
 }
 
 type GitConfig struct {
-	// See https://github.com/jesseduffield/lazygit/blob/master/docs/Custom_Pagers.md
-	Paging PagingConfig `yaml:"paging"`
+	// Array of pagers. Each entry has the following format:
+	// [dev] The following documentation is duplicated from the PagingConfig struct below.
+	//
+	//   # Value of the --color arg in the git diff command. Some pagers want
+	//   # this to be set to 'always' and some want it set to 'never'
+	//   colorArg: "always"
+	//
+	//   # e.g.
+	//   # diff-so-fancy
+	//   # delta --dark --paging=never
+	//   # ydiff -p cat -s --wrap --width={{columnWidth}}
+	//   pager: ""
+	//
+	//   # e.g. 'difft --color=always'
+	//   externalDiffCommand: ""
+	//
+	//   # If true, Lazygit will use git's `diff.external` config for paging.
+	//   # The advantage over `externalDiffCommand` is that this can be
+	//   # configured per file type in .gitattributes; see
+	//   # https://git-scm.com/docs/gitattributes#_defining_an_external_diff_driver.
+	//   useExternalDiffGitConfig: false
+	//
+	// See https://github.com/jesseduffield/lazygit/blob/master/docs/Custom_Pagers.md for more information.
+	Pagers []PagingConfig `yaml:"pagers"`
 	// Config relating to committing
 	Commit CommitConfig `yaml:"commit"`
 	// Config relating to merging
@@ -304,6 +328,7 @@ func (PagerType) JSONSchemaExtend(schema *jsonschema.Schema) {
 	}
 }
 
+// [dev] This documentation is duplicated in the GitConfig struct. If you make changes here, make them there too.
 type PagingConfig struct {
 	// Value of the --color arg in the git diff command. Some pagers want this to be set to 'always' and some want it set to 'never'
 	ColorArg string `yaml:"colorArg" jsonschema:"enum=always,enum=never"`
@@ -444,6 +469,7 @@ type KeybindingUniversalConfig struct {
 	PrevTab                           string   `yaml:"prevTab"`
 	NextScreenMode                    string   `yaml:"nextScreenMode"`
 	PrevScreenMode                    string   `yaml:"prevScreenMode"`
+	CyclePagers                       string   `yaml:"cyclePagers"`
 	Undo                              string   `yaml:"undo"`
 	Redo                              string   `yaml:"redo"`
 	FilteringMenu                     string   `yaml:"filteringMenu"`
@@ -753,32 +779,33 @@ func GetDefaultConfig() *UserConfig {
 				UnstagedChangesColor:            []string{"red"},
 				DefaultFgColor:                  []string{"default"},
 			},
-			CommitLength:                 CommitLengthConfig{Show: true},
-			SkipNoStagedFilesWarning:     false,
-			ShowListFooter:               true,
-			ShowCommandLog:               true,
-			ShowBottomLine:               true,
-			ShowPanelJumps:               true,
-			ShowFileTree:                 true,
-			ShowRootItemInFileTree:       true,
-			ShowNumstatInFilesView:       false,
-			ShowRandomTip:                true,
-			ShowIcons:                    false,
-			NerdFontsVersion:             "",
-			ShowFileIcons:                true,
-			CommitAuthorShortLength:      2,
-			CommitAuthorLongLength:       17,
-			CommitHashLength:             8,
-			ShowBranchCommitHash:         false,
-			ShowDivergenceFromBaseBranch: "none",
-			CommandLogSize:               8,
-			SplitDiff:                    "auto",
-			SkipRewordInEditorWarning:    false,
-			ScreenMode:                   "normal",
-			Border:                       "rounded",
-			AnimateExplosion:             true,
-			PortraitMode:                 "auto",
-			FilterMode:                   "substring",
+			CommitLength:                        CommitLengthConfig{Show: true},
+			SkipNoStagedFilesWarning:            false,
+			ShowListFooter:                      true,
+			ShowCommandLog:                      true,
+			ShowBottomLine:                      true,
+			ShowPanelJumps:                      true,
+			ShowFileTree:                        true,
+			ShowRootItemInFileTree:              true,
+			ShowNumstatInFilesView:              false,
+			ShowRandomTip:                       true,
+			ShowIcons:                           false,
+			NerdFontsVersion:                    "",
+			ShowFileIcons:                       true,
+			CommitAuthorShortLength:             2,
+			CommitAuthorLongLength:              17,
+			CommitHashLength:                    8,
+			ShowBranchCommitHash:                false,
+			ShowDivergenceFromBaseBranch:        "none",
+			CommandLogSize:                      8,
+			SplitDiff:                           "auto",
+			SkipRewordInEditorWarning:           false,
+			SkipSwitchWorktreeOnCheckoutWarning: false,
+			ScreenMode:                          "normal",
+			Border:                              "rounded",
+			AnimateExplosion:                    true,
+			PortraitMode:                        "auto",
+			FilterMode:                          "substring",
 			Spinner: SpinnerConfig{
 				Frames: []string{"|", "/", "-", "\\"},
 				Rate:   50,
@@ -790,11 +817,6 @@ func GetDefaultConfig() *UserConfig {
 			CursorStyle:                  "",
 		},
 		Git: GitConfig{
-			Paging: PagingConfig{
-				ColorArg:            "always",
-				Pager:               "",
-				ExternalDiffCommand: "",
-			},
 			Commit: CommitConfig{
 				SignOff:               false,
 				AutoWrapCommitMessage: true,
@@ -910,6 +932,7 @@ func GetDefaultConfig() *UserConfig {
 				PrevTab:                           "[",
 				NextScreenMode:                    "+",
 				PrevScreenMode:                    "_",
+				CyclePagers:                       "|",
 				Undo:                              "z",
 				Redo:                              "Z",
 				FilteringMenu:                     "<c-s>",

@@ -585,6 +585,9 @@ type TranslationSet struct {
 	ViewResetToUpstreamOptions            string
 	NextScreenMode                        string
 	PrevScreenMode                        string
+	CyclePagers                           string
+	CyclePagersTooltip                    string
+	CyclePagersDisabledReason             string
 	StartSearch                           string
 	StartFilter                           string
 	Keybindings                           string
@@ -1678,6 +1681,9 @@ func EnglishTranslationSet() *TranslationSet {
 		ViewResetToUpstreamOptions:       "View upstream reset options",
 		NextScreenMode:                   "Next screen mode (normal/half/fullscreen)",
 		PrevScreenMode:                   "Prev screen mode",
+		CyclePagers:                      "Cycle pagers",
+		CyclePagersTooltip:               "Choose the next pager in the list of configured pagers",
+		CyclePagersDisabledReason:        "No other pagers configured",
 		StartSearch:                      "Search the current view by text",
 		StartFilter:                      "Filter the current view by text",
 		KeybindingsLegend:                "Legend: `<c-b>` means ctrl+b, `<a-b>` means alt+b, `B` means shift+b",
@@ -1927,7 +1933,7 @@ func EnglishTranslationSet() *TranslationSet {
 		RemoveWorktree:                           "Remove worktree",
 		RemoveWorktreeTitle:                      "Remove worktree",
 		RemoveWorktreePrompt:                     "Are you sure you want to remove worktree '{{.worktreeName}}'?",
-		ForceRemoveWorktreePrompt:                "'{{.worktreeName}}' contains modified or untracked files (to be honest, it could contain both). Are you sure you want to remove it?",
+		ForceRemoveWorktreePrompt:                "'{{.worktreeName}}' contains modified or untracked files, or submodules (or all of these). Are you sure you want to remove it?",
 		RemovingWorktree:                         "Deleting worktree",
 		DetachWorktree:                           "Detach worktree",
 		DetachingWorktree:                        "Detaching worktree",
