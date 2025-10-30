@@ -1070,10 +1070,8 @@ func (g *Gui) drawTitle(v *View, fgColor, bgColor Attribute) error {
 	tabs := v.Tabs
 	prefix := v.TitlePrefix
 	if prefix != "" {
-		if len(v.FrameRunes) > 0 {
-			prefix += string(v.FrameRunes[0])
-		} else {
-			prefix += "─"
+		if !strings.HasSuffix(prefix, " ") {
+			prefix += " "
 		}
 	}
 	separator := " - "
@@ -1099,6 +1097,12 @@ func (g *Gui) drawTitle(v *View, fgColor, bgColor Attribute) error {
 	str := strings.Join(tabs, separator)
 
 	x := v.x0 + 2
+	if x >= 0 && x <= v.x1-2 && x < g.maxX {
+		if err := g.SetRune(x, v.y0, ' ', fgColor, bgColor); err != nil {
+			return err
+		}
+	}
+	x += runewidth.RuneWidth(' ')
 	for _, ch := range prefix {
 		if err := g.SetRune(x, v.y0, ch, fgColor, bgColor); err != nil {
 			return err
@@ -1129,6 +1133,11 @@ func (g *Gui) drawTitle(v *View, fgColor, bgColor Attribute) error {
 			return err
 		}
 		x += uniseg.StringWidth(string(ch))
+	}
+	if x >= 0 && x <= v.x1-2 && x < g.maxX {
+		if err := g.SetRune(x, v.y0, ' ', fgColor, bgColor); err != nil {
+			return err
+		}
 	}
 	return nil
 }
