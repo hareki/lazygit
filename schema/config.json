@@ -42,16 +42,12 @@
         "pattern": {
           "type": "string",
           "description": "pattern to match on. E.g. for 'feature/AB-123' to match on the AB-123 use \"^\\\\w+\\\\/(\\\\w+-\\\\w+).*\"",
-          "examples": [
-            "^\\w+\\/(\\w+-\\w+).*"
-          ]
+          "examples": ["^\\w+\\/(\\w+-\\w+).*"]
         },
         "replace": {
           "type": "string",
           "description": "Replace directive. E.g. for 'feature/AB-123' to start the commit message with 'AB-123 ' use \"[$1] \"",
-          "examples": [
-            "[$1]"
-          ]
+          "examples": ["[$1]"]
         }
       },
       "additionalProperties": false,
@@ -106,9 +102,7 @@
         "loadingText": {
           "type": "string",
           "description": "Text to display while waiting for command to finish",
-          "examples": [
-            "Loading..."
-          ]
+          "examples": ["Loading..."]
         },
         "description": {
           "type": "string",
@@ -116,13 +110,7 @@
         },
         "output": {
           "type": "string",
-          "enum": [
-            "none",
-            "terminal",
-            "log",
-            "logWithPty",
-            "popup"
-          ],
+          "enum": ["none", "terminal", "log", "logWithPty", "popup"],
           "description": "Where the output of the command should go. 'none' discards it, 'terminal' suspends lazygit and runs the command in the terminal (useful for commands that require user input), 'log' streams it to the command log, 'logWithPty' is like 'log' but runs the command in a pseudo terminal (can be useful for commands that produce colored output when the output is a terminal), and 'popup' shows it in a popup."
         },
         "outputTitle": {
@@ -160,9 +148,7 @@
           "type": "string",
           "minLength": 1,
           "description": "The value that will be used in the command",
-          "examples": [
-            "feature"
-          ]
+          "examples": ["feature"]
         },
         "key": {
           "type": "string",
@@ -197,9 +183,7 @@
         "body": {
           "type": "string",
           "description": "The message of the confirmation prompt.\nOnly for confirm prompts.",
-          "examples": [
-            "Are you sure you want to push to the remote?"
-          ]
+          "examples": ["Are you sure you want to push to the remote?"]
         },
         "options": {
           "items": {
@@ -218,23 +202,17 @@
         "filter": {
           "type": "string",
           "description": "The regexp to run specifying groups which are going to be kept from the command's output.\nOnly for menuFromCommand prompts.",
-          "examples": [
-            ".*{{.SelectedRemote.Name }}/(?P\u003cbranch\u003e.*)"
-          ]
+          "examples": [".*{{.SelectedRemote.Name }}/(?P\u003cbranch\u003e.*)"]
         },
         "valueFormat": {
           "type": "string",
           "description": "How to format matched groups from the filter to construct a menu item's value.\nOnly for menuFromCommand prompts.",
-          "examples": [
-            "{{ .branch }}"
-          ]
+          "examples": ["{{ .branch }}"]
         },
         "labelFormat": {
           "type": "string",
           "description": "Like valueFormat but for the labels. If `labelFormat` is not specified, `valueFormat` is shown instead.\nOnly for menuFromCommand prompts.",
-          "examples": [
-            "{{ .branch | green }}"
-          ]
+          "examples": ["{{ .branch | green }}"]
         }
       },
       "additionalProperties": false,
@@ -244,15 +222,7 @@
       "properties": {
         "preset": {
           "type": "string",
-          "enum": [
-            "authors",
-            "branches",
-            "files",
-            "refs",
-            "remotes",
-            "remoteBranches",
-            "tags"
-          ],
+          "enum": ["authors", "branches", "files", "refs", "remotes", "remoteBranches", "tags"],
           "description": "Uses built-in logic to obtain the suggestions. One of 'authors' | 'branches' | 'files' | 'refs' | 'remotes' | 'remoteBranches' | 'tags'"
         },
         "command": {
@@ -311,10 +281,7 @@
           "type": "array",
           "uniqueItems": true,
           "description": "list of branches that are considered 'main' branches, used when displaying commits",
-          "default": [
-            "master",
-            "main"
-          ]
+          "default": ["master", "main"]
         },
         "skipHookPrefix": {
           "type": "string",
@@ -333,11 +300,7 @@
         },
         "autoForwardBranches": {
           "type": "string",
-          "enum": [
-            "none",
-            "onlyMainBranches",
-            "allBranches"
-          ],
+          "enum": ["none", "onlyMainBranches", "allBranches"],
           "description": "If not \"none\", lazygit will automatically fast-forward local branches to match their upstream after fetching. Applies to branches that are not the currently checked out branch, and only to those that are strictly behind their upstream (as opposed to diverged).\nPossible values: 'none' | 'onlyMainBranches' | 'allBranches'",
           "default": "onlyMainBranches"
         },
@@ -425,20 +388,13 @@
         },
         "localBranchSortOrder": {
           "type": "string",
-          "enum": [
-            "date",
-            "recency",
-            "alphabetical"
-          ],
+          "enum": ["date", "recency", "alphabetical"],
           "description": "How branches are sorted in the local branches view.\nOne of: 'date' (default) | 'recency' | 'alphabetical'\nCan be changed from within Lazygit with the Sort Order menu (`s`) in the branches panel.",
           "default": "date"
         },
         "remoteBranchSortOrder": {
           "type": "string",
-          "enum": [
-            "date",
-            "alphabetical"
-          ],
+          "enum": ["date", "alphabetical"],
           "description": "How branches are sorted in the remote branches view.\nOne of: 'date' (default) | 'alphabetical'\nCan be changed from within Lazygit with the Sort Order menu (`s`) in the remote branches panel.",
           "default": "date"
         },
@@ -560,11 +516,7 @@
         },
         "mainPanelSplitMode": {
           "type": "string",
-          "enum": [
-            "horizontal",
-            "flexible",
-            "vertical"
-          ],
+          "enum": ["horizontal", "flexible", "vertical"],
           "description": "Sometimes the main window is split in two (e.g. when the selected file has both staged and unstaged changes). This setting controls how the two sections are split.\nOptions are:\n- 'horizontal': split the window horizontally\n- 'vertical': split the window vertically\n- 'flexible': (default) split the window horizontally if the window is wide enough, otherwise split vertically",
           "default": "flexible"
         },
@@ -585,17 +537,7 @@
         },
         "language": {
           "type": "string",
-          "enum": [
-            "auto",
-            "en",
-            "zh-TW",
-            "zh-CN",
-            "pl",
-            "nl",
-            "ja",
-            "ko",
-            "ru"
-          ],
+          "enum": ["auto", "en", "zh-TW", "zh-CN", "pl", "nl", "ja", "ko", "ru"],
           "description": "One of 'auto' (default) | 'en' | 'zh-CN' | 'zh-TW' | 'pl' | 'nl' | 'ja' | 'ko' | 'ru' | 'pt'",
           "default": "auto"
         },
@@ -664,11 +606,7 @@
         },
         "nerdFontsVersion": {
           "type": "string",
-          "enum": [
-            "2",
-            "3",
-            ""
-          ],
+          "enum": ["2", "3", ""],
           "description": "Nerd fonts version to use.\nOne of: '2' | '3' | empty string (default)\nIf empty, do not show icons."
         },
         "showFileIcons": {
@@ -699,11 +637,7 @@
         },
         "showDivergenceFromBaseBranch": {
           "type": "string",
-          "enum": [
-            "none",
-            "onlyArrow",
-            "arrowAndNumber"
-          ],
+          "enum": ["none", "onlyArrow", "arrowAndNumber"],
           "description": "Whether to show the divergence from the base branch in the branches view.\nOne of: 'none' | 'onlyArrow'  | 'arrowAndNumber'",
           "default": "none"
         },
@@ -715,32 +649,19 @@
         },
         "splitDiff": {
           "type": "string",
-          "enum": [
-            "auto",
-            "always"
-          ],
+          "enum": ["auto", "always"],
           "description": "Whether to split the main window when viewing file changes.\nOne of: 'auto' | 'always'\nIf 'auto', only split the main window when a file has both staged and unstaged changes",
           "default": "auto"
         },
         "screenMode": {
           "type": "string",
-          "enum": [
-            "normal",
-            "half",
-            "full"
-          ],
+          "enum": ["normal", "half", "full"],
           "description": "Default size for focused window. Can be changed from within Lazygit with '+' and '_' (but this won't change the default).\nOne of: 'normal' (default) | 'half' | 'full'",
           "default": "normal"
         },
         "border": {
           "type": "string",
-          "enum": [
-            "single",
-            "double",
-            "rounded",
-            "hidden",
-            "bold"
-          ],
+          "enum": ["single", "double", "rounded", "hidden", "bold"],
           "description": "Window border style.\nOne of 'rounded' (default) | 'single' | 'double' | 'hidden' | 'bold'",
           "default": "rounded"
         },
@@ -756,10 +677,7 @@
         },
         "filterMode": {
           "type": "string",
-          "enum": [
-            "substring",
-            "fuzzy"
-          ],
+          "enum": ["substring", "fuzzy"],
           "description": "How things are filtered when typing '/'.\nOne of 'substring' (default) | 'fuzzy'",
           "default": "substring"
         },
@@ -769,10 +687,7 @@
         },
         "statusPanelView": {
           "type": "string",
-          "enum": [
-            "dashboard",
-            "allBranchesLog"
-          ],
+          "enum": ["dashboard", "allBranchesLog"],
           "description": "Status panel view.\nOne of 'dashboard' (default) | 'allBranchesLog'",
           "default": "dashboard"
         },
@@ -790,6 +705,20 @@
           "type": "boolean",
           "description": "If true, when using the panel jump keys (default 1 through 5) and target panel is already active, go to next tab instead",
           "default": false
+        },
+        "cursorStyle": {
+          "type": "string",
+          "enum": [
+            "default",
+            "blinkingBlock",
+            "steadyBlock",
+            "blinkingUnderline",
+            "steadyUnderline",
+            "blinkingBar",
+            "steadyBar"
+          ],
+          "description": "Cursor style for text inputs and editable areas.\nOne of: '' (default terminal setting) | 'default' | 'blinkingBlock' | 'steadyBlock' | 'blinkingUnderline' | 'steadyUnderline' | 'blinkingBar' | 'steadyBar'",
+          "default": ""
         }
       },
       "additionalProperties": false,
@@ -1342,13 +1271,7 @@
             "type": "string"
           },
           "type": "array",
-          "default": [
-            "1",
-            "2",
-            "3",
-            "4",
-            "5"
-          ]
+          "default": ["1", "2", "3", "4", "5"]
         },
         "focusMainView": {
           "type": "string",
@@ -1566,22 +1489,13 @@
       "properties": {
         "order": {
           "type": "string",
-          "enum": [
-            "date-order",
-            "author-date-order",
-            "topo-order",
-            "default"
-          ],
+          "enum": ["date-order", "author-date-order", "topo-order", "default"],
           "description": "One of: 'date-order' | 'author-date-order' | 'topo-order' | 'default'\n'topo-order' makes it easier to read the git log graph, but commits may not appear chronologically. See https://git-scm.com/docs/\n\nCan be changed from within Lazygit with `Log menu -\u003e Commit sort order` (`\u003cc-l\u003e` in the commits window by default).",
           "default": "topo-order"
         },
         "showGraph": {
           "type": "string",
-          "enum": [
-            "always",
-            "never",
-            "when-maximised"
-          ],
+          "enum": ["always", "never", "when-maximised"],
           "description": "This determines whether the git graph is rendered in the commits panel\nOne of 'always' | 'never' | 'when-maximised'\n\nCan be toggled from within lazygit with `Log menu -\u003e Show git graph` (`\u003cc-l\u003e` in the commits window by default).",
           "default": "always"
         },
@@ -1605,9 +1519,7 @@
         "args": {
           "type": "string",
           "description": "Extra args passed to `git merge`, e.g. --no-ff",
-          "examples": [
-            "--no-ff"
-          ]
+          "examples": ["--no-ff"]
         },
         "squashMergeMessage": {
           "type": "string",
@@ -1687,10 +1599,7 @@
       "properties": {
         "colorArg": {
           "type": "string",
-          "enum": [
-            "always",
-            "never"
-          ],
+          "enum": ["always", "never"],
           "description": "Value of the --color arg in the git diff command. Some pagers want this to be set to 'always' and some want it set to 'never'"
         },
         "pager": {
@@ -1741,12 +1650,7 @@
           },
           "type": "array",
           "description": "The frames of the spinner animation.",
-          "default": [
-            "|",
-            "/",
-            "-",
-            "\\"
-          ]
+          "default": ["|", "/", "-", "\\"]
         },
         "rate": {
           "type": "integer",
@@ -1769,10 +1673,7 @@
           "minItems": 1,
           "uniqueItems": true,
           "description": "Border color of focused window",
-          "default": [
-            "green",
-            "bold"
-          ]
+          "default": ["green", "bold"]
         },
         "inactiveBorderColor": {
           "items": {
@@ -1782,9 +1683,7 @@
           "minItems": 1,
           "uniqueItems": true,
           "description": "Border color of non-focused windows",
-          "default": [
-            "default"
-          ]
+          "default": ["default"]
         },
         "searchingActiveBorderColor": {
           "items": {
@@ -1794,10 +1693,7 @@
           "minItems": 1,
           "uniqueItems": true,
           "description": "Border color of focused window when searching in that window",
-          "default": [
-            "cyan",
-            "bold"
-          ]
+          "default": ["cyan", "bold"]
         },
         "optionsTextColor": {
           "items": {
@@ -1807,9 +1703,7 @@
           "minItems": 1,
           "uniqueItems": true,
           "description": "Color of keybindings help text in the bottom line",
-          "default": [
-            "blue"
-          ]
+          "default": ["blue"]
         },
         "selectedLineBgColor": {
           "items": {
@@ -1819,9 +1713,7 @@
           "minItems": 1,
           "uniqueItems": true,
           "description": "Background color of selected line.\nSee https://github.com/jesseduffield/lazygit/blob/master/docs/Config.md#highlighting-the-selected-line",
-          "default": [
-            "blue"
-          ]
+          "default": ["blue"]
         },
         "inactiveViewSelectedLineBgColor": {
           "items": {
@@ -1831,9 +1723,7 @@
           "minItems": 1,
           "uniqueItems": true,
           "description": "Background color of selected line when view doesn't have focus.",
-          "default": [
-            "bold"
-          ]
+          "default": ["bold"]
         },
         "cherryPickedCommitFgColor": {
           "items": {
@@ -1843,9 +1733,7 @@
           "minItems": 1,
           "uniqueItems": true,
           "description": "Foreground color of copied commit",
-          "default": [
-            "blue"
-          ]
+          "default": ["blue"]
         },
         "cherryPickedCommitBgColor": {
           "items": {
@@ -1855,9 +1743,7 @@
           "minItems": 1,
           "uniqueItems": true,
           "description": "Background color of copied commit",
-          "default": [
-            "cyan"
-          ]
+          "default": ["cyan"]
         },
         "markedBaseCommitFgColor": {
           "items": {
@@ -1865,9 +1751,7 @@
           },
           "type": "array",
           "description": "Foreground color of marked base commit (for rebase)",
-          "default": [
-            "blue"
-          ]
+          "default": ["blue"]
         },
         "markedBaseCommitBgColor": {
           "items": {
@@ -1875,9 +1759,7 @@
           },
           "type": "array",
           "description": "Background color of marked base commit (for rebase)",
-          "default": [
-            "yellow"
-          ]
+          "default": ["yellow"]
         },
         "unstagedChangesColor": {
           "items": {
@@ -1887,9 +1769,7 @@
           "minItems": 1,
           "uniqueItems": true,
           "description": "Color for file with unstaged changes",
-          "default": [
-            "red"
-          ]
+          "default": ["red"]
         },
         "defaultFgColor": {
           "items": {
@@ -1899,9 +1779,7 @@
           "minItems": 1,
           "uniqueItems": true,
           "description": "Default text color",
-          "default": [
-            "default"
-          ]
+          "default": ["default"]
         }
       },
       "additionalProperties": false,
@@ -1912,11 +1790,7 @@
       "properties": {
         "method": {
           "type": "string",
-          "enum": [
-            "prompt",
-            "background",
-            "never"
-          ],
+          "enum": ["prompt", "background", "never"],
           "description": "One of: 'prompt' (default) | 'background' | 'never'",
           "default": "prompt"
         },
@@ -1985,12 +1859,7 @@
         },
         "notARepository": {
           "type": "string",
-          "enum": [
-            "prompt",
-            "create",
-            "skip",
-            "quit"
-          ],
+          "enum": ["prompt", "create", "skip", "quit"],
           "description": "What to do when opening Lazygit outside of a git repo.\n- 'prompt': (default) ask whether to initialize a new repo or open in the most recent repo\n- 'create': initialize a new repo\n- 'skip': open most recent repo\n- 'quit': exit Lazygit",
           "default": "prompt"
         },
