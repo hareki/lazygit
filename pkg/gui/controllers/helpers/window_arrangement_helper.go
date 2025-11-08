@@ -144,14 +144,14 @@ func GetWindowDimensions(args WindowArrangementArgs) map[string]boxlayout.Dimens
 				Weight:    1,
 				Children: []*boxlayout.Box{
 					{
-						Direction:           boxlayout.ROW,
-						Weight:              sideSectionWeight,
-						ConditionalChildren: sidePanelChildren(args),
-					},
-					{
 						Direction: boxlayout.ROW,
 						Weight:    mainSectionWeight,
 						Children:  mainPanelChildren(args),
+					},
+					{
+						Direction:           boxlayout.ROW,
+						Weight:              sideSectionWeight,
+						ConditionalChildren: sidePanelChildren(args),
 					},
 				},
 			},
