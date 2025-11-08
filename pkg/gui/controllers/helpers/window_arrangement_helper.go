@@ -241,9 +241,9 @@ func getMidSectionWeights(args WindowArrangementArgs) (int, int) {
 	mainSectionWeight := int(math.Round(maxColumnCount * (1 - sidePanelWidthRatio)))
 	sideSectionWeight := int(math.Round(maxColumnCount * sidePanelWidthRatio))
 
-	if splitMainPanelSideBySide(args) {
-		mainSectionWeight = sideSectionWeight * 5 // need to shrink side panel to make way for main panels if side-by-side
-	}
+	// if splitMainPanelSideBySide(args) {
+	// 	mainSectionWeight = sideSectionWeight * 5 // need to shrink side panel to make way for main panels if side-by-side
+	// }
 
 	if args.CurrentWindow == "main" || args.CurrentWindow == "secondary" {
 		if args.ScreenMode == types.SCREEN_HALF || args.ScreenMode == types.SCREEN_FULL {
@@ -253,7 +253,7 @@ func getMidSectionWeights(args WindowArrangementArgs) (int, int) {
 		if args.ScreenMode == types.SCREEN_HALF {
 			if args.UserConfig.Gui.EnlargedSideViewLocation == "top" {
 				mainSectionWeight = sideSectionWeight * 2
-			} else {
+			} else if args.UserConfig.Gui.EnlargedSideViewLocation != "left" {
 				mainSectionWeight = sideSectionWeight
 			}
 		} else if args.ScreenMode == types.SCREEN_FULL {
