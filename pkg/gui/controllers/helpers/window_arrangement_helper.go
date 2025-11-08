@@ -235,7 +235,25 @@ func mainSectionChildren(args WindowArrangementArgs) []*boxlayout.Box {
 }
 
 func getMidSectionWeights(args WindowArrangementArgs) (int, int) {
-	sidePanelWidthRatio := args.UserConfig.Gui.SidePanelWidth
+	sidePanelWidthSetting := args.UserConfig.Gui.SidePanelWidth
+	var sidePanelWidthRatio float64
+
+	if sidePanelWidthSetting > 1 {
+		if args.Width > 0 {
+			sidePanelWidthRatio = sidePanelWidthSetting / float64(args.Width)
+		} else {
+			sidePanelWidthRatio = 0
+		}
+	} else {
+		sidePanelWidthRatio = sidePanelWidthSetting
+	}
+
+	if sidePanelWidthRatio > 1 {
+		sidePanelWidthRatio = 1
+	} else if sidePanelWidthRatio < 0 {
+		sidePanelWidthRatio = 0
+	}
+
 	// Using 120 so that the default of 0.3333 will remain consistent with previous behavior
 	const maxColumnCount = 120
 	mainSectionWeight := int(math.Round(maxColumnCount * (1 - sidePanelWidthRatio)))
