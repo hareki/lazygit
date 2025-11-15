@@ -1311,6 +1311,7 @@ func (self *FilesController) handleStashSave(stashFunc func(message string) erro
 			self.c.Refresh(types.RefreshOptions{Scope: []types.RefreshableView{types.STASH, types.FILES}})
 			return nil
 		},
+		AllowEmptyInput: true,
 	})
 
 	return nil
