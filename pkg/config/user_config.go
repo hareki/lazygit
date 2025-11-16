@@ -49,6 +49,14 @@ type RefresherConfig struct {
 	FetchInterval int `yaml:"fetchInterval" jsonschema:"minimum=0"`
 }
 
+func (c *RefresherConfig) RefreshIntervalDuration() time.Duration {
+	return time.Second * time.Duration(c.RefreshInterval)
+}
+
+func (c *RefresherConfig) FetchIntervalDuration() time.Duration {
+	return time.Second * time.Duration(c.FetchInterval)
+}
+
 type GuiConfig struct {
 	// See https://github.com/jesseduffield/lazygit/blob/master/docs/Config.md#custom-author-color
 	AuthorColors map[string]string `yaml:"authorColors"`
@@ -533,6 +541,7 @@ type KeybindingBranchesConfig struct {
 	PushTag                string `yaml:"pushTag"`
 	SetUpstream            string `yaml:"setUpstream"`
 	FetchRemote            string `yaml:"fetchRemote"`
+	AddForkRemote          string `yaml:"addForkRemote"`
 	SortOrder              string `yaml:"sortOrder"`
 }
 
@@ -992,6 +1001,7 @@ func GetDefaultConfig() *UserConfig {
 				PushTag:                "P",
 				SetUpstream:            "u",
 				FetchRemote:            "f",
+				AddForkRemote:          "F",
 				SortOrder:              "s",
 			},
 			Worktrees: KeybindingWorktreesConfig{
