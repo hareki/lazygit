@@ -44,7 +44,7 @@ func (self *FilesController) GetKeybindings(opts types.KeybindingsOpts) []*types
 		{
 			Key:               opts.GetKey(opts.Config.Universal.Select),
 			Handler:           self.withItems(self.press),
-			GetDisabledReason: self.require(self.itemsSelected()),
+			GetDisabledReason: self.require(self.withFileTreeViewModelMutex(self.itemsSelected())),
 			Description:       self.c.Tr.Stage,
 			Tooltip:           self.c.Tr.StageTooltip,
 			DisplayOnScreen:   true,
@@ -91,7 +91,7 @@ func (self *FilesController) GetKeybindings(opts types.KeybindingsOpts) []*types
 		{
 			Key:               opts.GetKey(opts.Config.Universal.Edit),
 			Handler:           self.withItems(self.edit),
-			GetDisabledReason: self.require(self.itemsSelected(self.canEditFiles)),
+			GetDisabledReason: self.require(self.withFileTreeViewModelMutex(self.itemsSelected(self.canEditFiles))),
 			Description:       self.c.Tr.Edit,
 			Tooltip:           self.c.Tr.EditFileTooltip,
 			DisplayOnScreen:   true,
@@ -159,7 +159,7 @@ func (self *FilesController) GetKeybindings(opts types.KeybindingsOpts) []*types
 		{
 			Key:               opts.GetKey(opts.Config.Universal.Remove),
 			Handler:           self.withItems(self.remove),
-			GetDisabledReason: self.require(self.itemsSelected(self.canRemove)),
+			GetDisabledReason: self.withFileTreeViewModelMutex(self.require(self.itemsSelected(self.canRemove))),
 			Description:       self.c.Tr.Discard,
 			Tooltip:           self.c.Tr.DiscardFileChangesTooltip,
 			OpensMenu:         true,
@@ -196,7 +196,7 @@ func (self *FilesController) GetKeybindings(opts types.KeybindingsOpts) []*types
 			Handler:           self.withItems(self.openMergeConflictMenu),
 			Description:       self.c.Tr.ViewMergeConflictOptions,
 			Tooltip:           self.c.Tr.ViewMergeConflictOptionsTooltip,
-			GetDisabledReason: self.require(self.itemsSelected(self.canOpenMergeConflictMenu)),
+			GetDisabledReason: self.require(self.withFileTreeViewModelMutex(self.itemsSelected(self.canOpenMergeConflictMenu))),
 			OpensMenu:         true,
 			DisplayOnScreen:   true,
 		},
@@ -220,6 +220,15 @@ func (self *FilesController) GetKeybindings(opts types.KeybindingsOpts) []*types
 			Tooltip:           self.c.Tr.ExpandAllTooltip,
 			GetDisabledReason: self.require(self.isInTreeMode),
 		},
+	}
+}
+
+func (self *FilesController) withFileTreeViewModelMutex(callback func() *types.DisabledReason) func() *types.DisabledReason {
+	return func() *types.DisabledReason {
+		self.c.Contexts().Files.FileTreeViewModel.RWMutex.RLock()
+		defer self.c.Contexts().Files.FileTreeViewModel.RWMutex.RUnlock()
+
+		return callback()
 	}
 }
 
