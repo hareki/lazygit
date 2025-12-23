@@ -116,7 +116,12 @@ func (self *ListController) handleLineChangeAux(f func(int), change int) error {
 	}
 
 	if cursorMoved || rangeBefore != rangeAfter {
-		self.context.HandleFocus(types.OnFocusOpts{})
+		self.context.HandleFocus(types.OnFocusOpts{ScrollSelectionIntoView: true})
+	} else {
+		// If the selection did not change (because, for example, we are at the top of the list and
+		// press up), we still want to ensure that the selection is visible. This is useful after
+		// scrolling the selection out of view with the mouse.
+		self.context.FocusLine(true)
 	}
 
 	return nil
@@ -173,6 +178,15 @@ func (self *ListController) handlePageChange(delta int) error {
 		}
 	}
 
+	// Since we already scrolled the view above, the normal mechanism that
+	// ListContextTrait.FocusLine uses for deciding whether rerendering is needed won't work. It is
+	// based on checking whether the origin was changed by the call to FocusPoint in that function,
+	// but since we scrolled the view directly above, the origin has already been updated. So we
+	// must tell it explicitly to rerender.
+	self.context.SetNeedRerenderVisibleLines()
+
+	// Since we are maintaining the scroll position ourselves above, there's no point in passing
+	// ScrollSelectionIntoView=true here.
 	self.context.HandleFocus(types.OnFocusOpts{})
 
 	return nil

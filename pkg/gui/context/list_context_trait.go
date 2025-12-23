@@ -21,12 +21,15 @@ type ListContextTrait struct {
 	// If this is true, we only render the visible lines of the list. Useful for lists that can
 	// get very long, because it can save a lot of memory
 	renderOnlyVisibleLines bool
+	// If renderOnlyVisibleLines is true, needRerenderVisibleLines indicates whether we need to
+	// rerender the visible lines e.g. because the scroll position changed
+	needRerenderVisibleLines bool
 }
 
 func (self *ListContextTrait) IsListContext() {}
 
-func (self *ListContextTrait) FocusLine() {
-	self.Context.FocusLine()
+func (self *ListContextTrait) FocusLine(scrollIntoView bool) {
+	self.Context.FocusLine(scrollIntoView)
 
 	// Doing this at the end of the layout function because we need the view to be
 	// resized before we focus the line, otherwise if we're in accordion mode
@@ -36,7 +39,7 @@ func (self *ListContextTrait) FocusLine() {
 		oldOrigin, _ := self.GetViewTrait().ViewPortYBounds()
 
 		self.GetViewTrait().FocusPoint(
-			self.ModelIndexToViewIndex(self.list.GetSelectedLineIdx()))
+			self.ModelIndexToViewIndex(self.list.GetSelectedLineIdx()), scrollIntoView)
 
 		selectRangeIndex, isSelectingRange := self.list.GetRangeStartIdx()
 		if isSelectingRange {
@@ -50,8 +53,8 @@ func (self *ListContextTrait) FocusLine() {
 			self.refreshViewport()
 		} else if self.renderOnlyVisibleLines {
 			newOrigin, _ := self.GetViewTrait().ViewPortYBounds()
-			if oldOrigin != newOrigin {
-				self.HandleRender()
+			if oldOrigin != newOrigin || self.needRerenderVisibleLines {
+				self.refreshViewport()
 			}
 		}
 		return nil
@@ -75,7 +78,7 @@ func formatListFooter(selectedLineIdx int, length int) string {
 }
 
 func (self *ListContextTrait) HandleFocus(opts types.OnFocusOpts) {
-	self.FocusLine()
+	self.FocusLine(opts.ScrollSelectionIntoView)
 
 	self.GetViewTrait().SetHighlight(self.list.Len() > 0)
 
@@ -102,10 +105,10 @@ func (self *ListContextTrait) HandleRender() {
 		if self.getNonModelItems != nil {
 			totalLength += len(self.getNonModelItems())
 		}
-		self.GetViewTrait().SetContentLineCount(totalLength)
 		startIdx, length := self.GetViewTrait().ViewPortYBounds()
 		content := self.renderLines(startIdx, startIdx+length)
-		self.GetViewTrait().SetViewPortContentAndClearEverythingElse(content)
+		self.GetViewTrait().SetViewPortContentAndClearEverythingElse(totalLength, content)
+		self.needRerenderVisibleLines = false
 	} else {
 		content := self.renderLines(-1, -1)
 		self.GetViewTrait().SetContent(content)
@@ -140,6 +143,10 @@ func (self *ListContextTrait) RangeSelectEnabled() bool {
 
 func (self *ListContextTrait) RenderOnlyVisibleLines() bool {
 	return self.renderOnlyVisibleLines
+}
+
+func (self *ListContextTrait) SetNeedRerenderVisibleLines() {
+	self.needRerenderVisibleLines = true
 }
 
 func (self *ListContextTrait) TotalContentHeight() int {
