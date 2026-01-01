@@ -1102,7 +1102,7 @@ func (g *Gui) drawTitle(v *View, fgColor, bgColor Attribute) error {
 			return err
 		}
 	}
-	x += runewidth.RuneWidth(' ')
+	x += uniseg.StringWidth(" ")
 	for _, ch := range prefix {
 		if err := g.SetRune(x, v.y0, ch, fgColor, bgColor); err != nil {
 			return err
