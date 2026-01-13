@@ -149,6 +149,10 @@
           "minLength": 1,
           "description": "The value that will be used in the command",
           "examples": ["feature"]
+        },
+        "key": {
+          "type": "string",
+          "description": "Keybinding to invoke this menu option without needing to navigate to it"
         }
       },
       "additionalProperties": false,
@@ -218,15 +222,7 @@
       "properties": {
         "preset": {
           "type": "string",
-          "enum": [
-            "authors",
-            "branches",
-            "files",
-            "refs",
-            "remotes",
-            "remoteBranches",
-            "tags"
-          ],
+          "enum": ["authors", "branches", "files", "refs", "remotes", "remoteBranches", "tags"],
           "description": "Uses built-in logic to obtain the suggestions. One of 'authors' | 'branches' | 'files' | 'refs' | 'remotes' | 'remoteBranches' | 'tags'"
         },
         "command": {
@@ -540,17 +536,7 @@
         },
         "language": {
           "type": "string",
-          "enum": [
-            "auto",
-            "en",
-            "zh-TW",
-            "zh-CN",
-            "pl",
-            "nl",
-            "ja",
-            "ko",
-            "ru"
-          ],
+          "enum": ["auto", "en", "zh-TW", "zh-CN", "pl", "nl", "ja", "ko", "ru"],
           "description": "One of 'auto' (default) | 'en' | 'zh-CN' | 'zh-TW' | 'pl' | 'nl' | 'ja' | 'ko' | 'ru' | 'pt'",
           "default": "auto"
         },
