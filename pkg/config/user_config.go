@@ -555,6 +555,7 @@ type KeybindingCommitsConfig struct {
 	RenameCommitWithEditor         string `yaml:"renameCommitWithEditor"`
 	ViewResetOptions               string `yaml:"viewResetOptions"`
 	MarkCommitAsFixup              string `yaml:"markCommitAsFixup"`
+	SetFixupMessage                string `yaml:"setFixupMessage"`
 	CreateFixupCommit              string `yaml:"createFixupCommit"`
 	SquashAboveCommits             string `yaml:"squashAboveCommits"`
 	MoveDownCommit                 string `yaml:"moveDownCommit"`
@@ -1015,6 +1016,7 @@ func GetDefaultConfig() *UserConfig {
 				RenameCommitWithEditor:         "R",
 				ViewResetOptions:               "g",
 				MarkCommitAsFixup:              "f",
+				SetFixupMessage:                "c",
 				CreateFixupCommit:              "F",
 				SquashAboveCommits:             "S",
 				MoveDownCommit:                 "<c-j>",

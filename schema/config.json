@@ -874,6 +874,10 @@
           "type": "string",
           "default": "f"
         },
+        "setFixupMessage": {
+          "type": "string",
+          "default": "c"
+        },
         "createFixupCommit": {
           "type": "string",
           "default": "F"
