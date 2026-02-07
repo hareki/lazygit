@@ -463,7 +463,7 @@ func (self *FilesController) pressWithLock(selectedNodes []*filetree.FileNode) e
 	if len(unstagedSelectedNodes) > 0 {
 		var extraArgs []string
 
-		if self.context().GetFilter() == filetree.DisplayTracked {
+		if self.context().GetStatusFilter() == filetree.DisplayTracked {
 			extraArgs = []string{"-u"}
 		}
 
@@ -748,7 +748,7 @@ func (self *FilesController) toggleStagedAllWithLock() error {
 			return err
 		}
 
-		onlyTrackedFiles := self.context().GetFilter() == filetree.DisplayTracked
+		onlyTrackedFiles := self.context().GetStatusFilter() == filetree.DisplayTracked
 		if err := self.c.Git().WorkingTree.StageAll(onlyTrackedFiles); err != nil {
 			return err
 		}
@@ -936,7 +936,7 @@ func (self *FilesController) isResolvingConflicts() bool {
 }
 
 func (self *FilesController) handleStatusFilterPressed() error {
-	currentFilter := self.context().GetFilter()
+	currentFilter := self.context().GetStatusFilter()
 	return self.c.Menu(types.CreateMenuOptions{
 		Title: self.c.Tr.FilteringMenuTitle,
 		Items: []*types.MenuItem{
@@ -1004,7 +1004,7 @@ func (self *FilesController) filteringLabel(filter filetree.FileTreeDisplayFilte
 }
 
 func (self *FilesController) setStatusFiltering(filter filetree.FileTreeDisplayFilter) error {
-	previousFilter := self.context().GetFilter()
+	previousFilter := self.context().GetStatusFilter()
 
 	self.context().FileTreeViewModel.SetStatusFilter(filter)
 	self.c.Contexts().Files.GetView().Subtitle = self.filteringLabel(filter)
