@@ -495,9 +495,10 @@ type KeybindingUniversalConfig struct {
 }
 
 type KeybindingStatusConfig struct {
-	CheckForUpdate      string `yaml:"checkForUpdate"`
-	RecentRepos         string `yaml:"recentRepos"`
-	AllBranchesLogGraph string `yaml:"allBranchesLogGraph"`
+	CheckForUpdate             string `yaml:"checkForUpdate"`
+	RecentRepos                string `yaml:"recentRepos"`
+	AllBranchesLogGraph        string `yaml:"allBranchesLogGraph"`
+	AllBranchesLogGraphReverse string `yaml:"allBranchesLogGraphReverse"`
 }
 
 type KeybindingFilesConfig struct {
@@ -960,9 +961,10 @@ func GetDefaultConfig() *UserConfig {
 				OpenDiffTool:                      "<c-t>",
 			},
 			Status: KeybindingStatusConfig{
-				CheckForUpdate:      "u",
-				RecentRepos:         "<enter>",
-				AllBranchesLogGraph: "a",
+				CheckForUpdate:             "u",
+				RecentRepos:                "<enter>",
+				AllBranchesLogGraph:        "a",
+				AllBranchesLogGraphReverse: "A",
 			},
 			Files: KeybindingFilesConfig{
 				CommitChanges:            "c",
