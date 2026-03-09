@@ -1132,6 +1132,10 @@
         "allBranchesLogGraph": {
           "type": "string",
           "default": "a"
+        },
+        "allBranchesLogGraphReverse": {
+          "type": "string",
+          "default": "A"
         }
       },
       "additionalProperties": false,
