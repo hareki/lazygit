@@ -1596,10 +1596,9 @@ func (self *FilesController) remove(selectedNodes []*filetree.FileNode) error {
 				defer self.context().CancelRangeSelect()
 			}
 
-			for _, node := range selectedNodes {
-				if err := self.c.Git().WorkingTree.DiscardAllDirChanges(node); err != nil {
-					return err
-				}
+			nodes := lo.Map(selectedNodes, func(n *filetree.FileNode, _ int) git_commands.IFileNode { return n })
+			if err := self.c.Git().WorkingTree.DiscardAllDirChanges(nodes); err != nil {
+				return err
 			}
 
 			self.c.Refresh(types.RefreshOptions{Mode: types.ASYNC, Scope: []types.RefreshableView{types.FILES, types.WORKTREES}})
@@ -1623,10 +1622,9 @@ func (self *FilesController) remove(selectedNodes []*filetree.FileNode) error {
 				defer self.context().CancelRangeSelect()
 			}
 
-			for _, node := range selectedNodes {
-				if err := self.c.Git().WorkingTree.DiscardUnstagedDirChanges(node); err != nil {
-					return err
-				}
+			nodes := lo.Map(selectedNodes, func(n *filetree.FileNode, _ int) git_commands.IFileNode { return n })
+			if err := self.c.Git().WorkingTree.DiscardUnstagedDirChanges(nodes); err != nil {
+				return err
 			}
 
 			self.c.Refresh(types.RefreshOptions{Mode: types.ASYNC, Scope: []types.RefreshableView{types.FILES, types.WORKTREES}})
