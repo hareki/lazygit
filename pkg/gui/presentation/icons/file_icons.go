@@ -189,8 +189,8 @@ var nameIconMap = map[string]IconProperties{
 	"py.typed":                   {Icon: "\ue606", Color: "#ffbc03"},     // 
 	"QtProject.conf":             {Icon: "\uf375", Color: "#40CD52"},     // 
 	"R":                          {Icon: "\U000f07d4", Color: "#2266BA"}, // 󰟔
-	"README":                     {Icon: "\U000f00ba", Color: "#EDEDED"}, // 󰂺
-	"README.md":                  {Icon: "\U000f00ba", Color: "#EDEDED"}, // 󰂺
+	"README":                     {Icon: "\uf4ed", Color: "#F9E2AF"},     // 
+	"README.md":                  {Icon: "\uf4ed", Color: "#F9E2AF"},     // 
 	"robots.txt":                 {Icon: "\U000f06a9", Color: "#5D7096"}, // 󰚩
 	"rubydoc":                    {Icon: "\ue73b", Color: "#F32C24"},     // 
 	"SECURITY":                   {Icon: "\U000f0483", Color: "#BEC4C9"}, // 󰒃
