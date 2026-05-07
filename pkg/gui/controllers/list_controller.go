@@ -35,11 +35,11 @@ func (self *ListController) Context() types.Context {
 }
 
 func (self *ListController) HandlePrevLine() error {
-	return self.handleLineChange(-1)
+	return self.handleLineChange(self.wrappedDelta(-1))
 }
 
 func (self *ListController) HandleNextLine() error {
-	return self.handleLineChange(1)
+	return self.handleLineChange(self.wrappedDelta(1))
 }
 
 func (self *ListController) HandleScrollLeft() error {
