@@ -558,6 +558,8 @@ func (self *RefreshHelper) refreshFilesAndSubmodules() error {
 		return err
 	}
 
+	self.selectStartupFileIfNeeded()
+
 	self.c.OnUIThread(func() error {
 		self.refreshView(self.c.Contexts().Submodules)
 		self.refreshView(self.c.Contexts().Files)

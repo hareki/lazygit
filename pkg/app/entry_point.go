@@ -29,6 +29,7 @@ import (
 type cliArgs struct {
 	RepoPath           string
 	FilterPath         string
+	FilePath           string
 	GitArg             string
 	UseConfigDir       string
 	WorkTree           string
@@ -174,7 +175,7 @@ func Start(buildInfo *BuildInfo, integrationTest integrationTypes.IntegrationTes
 
 	parsedGitArg := parseGitArg(cliArgs.GitArg)
 
-	Run(appConfig, common, appTypes.NewStartArgs(cliArgs.FilterPath, parsedGitArg, cliArgs.ScreenMode, integrationTest))
+	Run(appConfig, common, appTypes.NewStartArgs(cliArgs.FilterPath, cliArgs.FilePath, parsedGitArg, cliArgs.ScreenMode, integrationTest))
 }
 
 func parseCliArgsAndEnvVars() *cliArgs {
@@ -185,6 +186,9 @@ func parseCliArgsAndEnvVars() *cliArgs {
 
 	filterPath := ""
 	flaggy.String(&filterPath, "f", "filter", "Path to filter on in `git log -- <path>`. When in filter mode, the commits, reflog, and stash are filtered based on the given path, and some operations are restricted")
+
+	filePath := ""
+	flaggy.String(&filePath, "", "file", "Path to a file to select in the Files panel on startup (absolute or relative to the current directory). Ignored if the file is not in the Files panel.")
 
 	gitArg := ""
 	flaggy.AddPositionalValue(&gitArg, "git-arg", 1, false, "Panel to focus upon opening lazygit. Accepted values (based on git terminology): status, branch, log, stash. Ignored if --filter arg is passed.")
@@ -231,6 +235,7 @@ func parseCliArgsAndEnvVars() *cliArgs {
 	return &cliArgs{
 		RepoPath:           repoPath,
 		FilterPath:         filterPath,
+		FilePath:           filePath,
 		GitArg:             gitArg,
 		PrintVersionInfo:   printVersionInfo,
 		Debug:              debug,

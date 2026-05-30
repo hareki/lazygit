@@ -389,6 +389,8 @@ type IRepoStateAccessor interface {
 	GetWindowViewNameMap() *utils.ThreadSafeMap[string, string]
 	GetStartupStage() StartupStage
 	SetStartupStage(stage StartupStage)
+	GetStartupFile() string
+	SetStartupFile(string)
 	GetCurrentPopupOpts() *CreatePopupPanelOpts
 	SetCurrentPopupOpts(*CreatePopupPanelOpts)
 	GetScreenMode() ScreenMode

@@ -238,6 +238,10 @@ type GuiRepoState struct {
 	SearchState  *types.SearchState
 	StartupStage types.StartupStage // Allows us to not load everything at once
 
+	// StartupFile is a file to select in the Files panel once it's loaded on
+	// startup (from the --file CLI flag). Consumed once, then cleared.
+	StartupFile string
+
 	ContextMgr *ContextMgr
 	Contexts   *context.ContextTree
 
@@ -619,7 +623,8 @@ func (gui *Gui) resetState(startArgs appTypes.StartArgs) types.Context {
 			Diffing:          diffing.New(),
 			MarkedBaseCommit: marked_base_commit.New(),
 		},
-		ScreenMode: initialScreenMode,
+		ScreenMode:  initialScreenMode,
+		StartupFile: startArgs.FilePath,
 		// TODO: only use contexts from context manager
 		ContextMgr:        NewContextMgr(gui, contextTree),
 		Contexts:          contextTree,
