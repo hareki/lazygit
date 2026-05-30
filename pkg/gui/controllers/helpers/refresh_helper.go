@@ -1315,6 +1315,15 @@ func (self *RefreshHelper) refreshFilesAndSubmodules(captured capturedFilesState
 		return err
 	}
 
+	// Select the --file startup target on the UI thread. refreshStateFiles now
+	// bounces its own model write (SetTree) onto the UI thread, so on this worker
+	// the tree isn't populated yet; running SelectPath here inline would find
+	// nothing and race the UI. This bounce is queued after that write and before
+	// the Files render below, so the render reflects the selection.
+	self.onUIThreadUnlessRepoChanged(env, func() {
+		self.selectStartupFileIfNeeded()
+	})
+
 	self.refreshView(self.c.Contexts().Submodules, env)
 	self.refreshView(self.c.Contexts().Files, env)
 
