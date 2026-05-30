@@ -252,6 +252,10 @@ type GuiRepoState struct {
 	// it's atomic. Holds a types.StartupStage.
 	startupStage atomic.Int32
 
+	// StartupFile is a file to select in the Files panel once it's loaded on
+	// startup (from the --file CLI flag). Consumed once, then cleared.
+	StartupFile string
+
 	ContextMgr *ContextMgr
 	Contexts   *context.ContextTree
 
@@ -656,7 +660,8 @@ func (gui *Gui) resetState(startArgs appTypes.StartArgs) types.Context {
 			Diffing:          diffing.New(),
 			MarkedBaseCommit: marked_base_commit.New(),
 		},
-		ScreenMode: initialScreenMode,
+		ScreenMode:  initialScreenMode,
+		StartupFile: startArgs.FilePath,
 		// TODO: only use contexts from context manager
 		ContextMgr:  NewContextMgr(gui, contextTree),
 		Contexts:    contextTree,
