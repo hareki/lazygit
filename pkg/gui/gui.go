@@ -520,8 +520,10 @@ func (gui *Gui) checkForChangedConfigsThatDontAutoReload(oldConfig *config.UserC
 	configsThatDontAutoReload := []string{
 		"Git.AutoFetch",
 		"Git.AutoRefresh",
+		"Git.AutoDetectExternalChanges",
 		"Refresher.RefreshInterval",
 		"Refresher.FetchInterval",
+		"Refresher.ExternalChangeCheckInterval",
 		"Update.Method",
 		"Update.Days",
 	}

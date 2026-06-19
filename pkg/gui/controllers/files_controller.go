@@ -1472,7 +1472,7 @@ func (self *FilesController) fetch() error {
 			return errors.New(self.c.Tr.PassUnameWrong)
 		}
 
-		return self.c.Helpers().BranchesHelper.PostFetchRefresh(err)
+		return self.c.Helpers().BranchesHelper.PostFetchRefresh(err, false)
 	})
 }
 
