@@ -103,6 +103,7 @@ type replayedEvents struct {
 	Keys        chan *TcellKeyEventWrapper
 	Resizes     chan *TcellResizeEventWrapper
 	MouseEvents chan *TcellMouseEventWrapper
+	FocusEvents chan *TcellFocusEventWrapper
 }
 
 type RecordingConfig struct {
@@ -255,6 +256,7 @@ func NewGui(opts NewGuiOpts) (*Gui, error) {
 			Keys:        make(chan *TcellKeyEventWrapper),
 			Resizes:     make(chan *TcellResizeEventWrapper),
 			MouseEvents: make(chan *TcellMouseEventWrapper),
+			FocusEvents: make(chan *TcellFocusEventWrapper),
 		}
 	}
 
