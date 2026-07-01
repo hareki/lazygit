@@ -1320,8 +1320,12 @@ func (self *RefreshHelper) refreshFilesAndSubmodules(captured capturedFilesState
 	// the tree isn't populated yet; running SelectPath here inline would find
 	// nothing and race the UI. This bounce is queued after that write and before
 	// the Files render below, so the render reflects the selection.
+	// scrollStartupFileIntoView then queues its own focus, which runs after the
+	// render (it needs the laid-out view to compute the scroll origin).
 	self.onUIThreadUnlessRepoChanged(env, func() {
-		self.selectStartupFileIfNeeded()
+		if self.selectStartupFileIfNeeded() {
+			self.scrollStartupFileIntoView()
+		}
 	})
 
 	self.refreshView(self.c.Contexts().Submodules, env)
