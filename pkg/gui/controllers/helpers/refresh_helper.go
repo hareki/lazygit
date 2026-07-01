@@ -749,11 +749,14 @@ func (self *RefreshHelper) refreshFilesAndSubmodules(background bool) error {
 		return err
 	}
 
-	self.selectStartupFileIfNeeded()
+	selectedStartupFile := self.selectStartupFileIfNeeded()
 
 	self.c.OnUIThread(func() error {
 		self.refreshView(self.c.Contexts().Submodules)
 		self.refreshView(self.c.Contexts().Files)
+		if selectedStartupFile {
+			self.scrollStartupFileIntoView()
+		}
 		return nil
 	})
 
