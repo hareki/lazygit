@@ -1143,9 +1143,13 @@ func (g *Gui) drawListFooter(v *View, fgColor, bgColor Attribute) error {
 		return nil
 	}
 
-	start := v.x1 - 1 - uniseg.StringWidth(message)
-	if start < v.x0 {
+	// Pad the footer with a blank cell on each side matching the spacing the title gets at the top.
+	start := v.x1 - 2 - uniseg.StringWidth(message)
+	if start-1 < v.x0 {
 		return nil
+	}
+	if err := g.SetRune(start-1, v.y1, ' ', fgColor, bgColor); err != nil {
+		return err
 	}
 	x := start
 	for _, ch := range message {
@@ -1156,6 +1160,11 @@ func (g *Gui) drawListFooter(v *View, fgColor, bgColor Attribute) error {
 			return err
 		}
 		x += uniseg.StringWidth(string(ch))
+	}
+	if x < v.x1 {
+		if err := g.SetRune(x, v.y1, ' ', fgColor, bgColor); err != nil {
+			return err
+		}
 	}
 	return nil
 }
