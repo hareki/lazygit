@@ -12,6 +12,7 @@ import (
 	"sort"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/gdamore/tcell/v3"
@@ -112,7 +113,10 @@ type Gui struct {
 
 	PopupHandler types.IPopupHandler
 
-	IsRefreshingFiles bool
+	// Bumped every time we switch to a different repository (in resetState).
+	// Used to drop refresh results that were computed for a repo we've since
+	// navigated away from. See RefreshHelper.onUIThreadUnlessRepoChanged.
+	repoGeneration atomic.Int32
 
 	// we use this to decide whether we'll return to the original directory that
 	// lazygit was opened in, or if we'll retain the one we're currently in.
@@ -172,16 +176,12 @@ func (self *StateAccessor) GetRepoState() types.IRepoStateAccessor {
 	return self.gui.State
 }
 
+func (self *StateAccessor) GetRepoGeneration() int {
+	return int(self.gui.repoGeneration.Load())
+}
+
 func (self *StateAccessor) GetPagerConfig() *config.PagerConfig {
 	return self.gui.pagerConfig
-}
-
-func (self *StateAccessor) GetIsRefreshingFiles() bool {
-	return self.gui.IsRefreshingFiles
-}
-
-func (self *StateAccessor) SetIsRefreshingFiles(value bool) {
-	self.gui.IsRefreshingFiles = value
 }
 
 func (self *StateAccessor) GetShowExtrasWindow() bool {
@@ -235,8 +235,11 @@ type GuiRepoState struct {
 
 	SplitMainPanel bool
 
-	SearchState  *types.SearchState
-	StartupStage types.StartupStage // Allows us to not load everything at once
+	SearchState *types.SearchState
+	// Lets us not load everything at once. Written and read from refresh
+	// workers (the reflog/branches load transitions it INITIAL->COMPLETE), so
+	// it's atomic. Holds a types.StartupStage.
+	startupStage atomic.Int32
 
 	// StartupFile is a file to select in the Files panel once it's loaded on
 	// startup (from the --file CLI flag). Consumed once, then cleared.
@@ -267,7 +270,11 @@ type GuiRepoState struct {
 	// continue such an operation once its conflicts are resolved if we started
 	// it ourselves; for an externally started one, popping up unbidden would be
 	// confusing. Reset whenever we observe that no operation is in progress.
-	mergeOrRebaseStartedInLazygit bool
+	//
+	// Written from both the files refresh worker and the merge/rebase result
+	// path (which runs on a worker for the async callers), and read from the
+	// files refresh worker, so it's atomic.
+	mergeOrRebaseStartedInLazygit atomic.Bool
 }
 
 var _ types.IRepoStateAccessor = new(GuiRepoState)
@@ -281,11 +288,11 @@ func (self *GuiRepoState) GetWindowViewNameMap() *utils.ThreadSafeMap[string, st
 }
 
 func (self *GuiRepoState) GetStartupStage() types.StartupStage {
-	return self.StartupStage
+	return types.StartupStage(self.startupStage.Load())
 }
 
 func (self *GuiRepoState) SetStartupStage(value types.StartupStage) {
-	self.StartupStage = value
+	self.startupStage.Store(int32(value))
 }
 
 func (self *GuiRepoState) GetCurrentPopupOpts() *types.CreatePopupPanelOpts {
@@ -297,11 +304,11 @@ func (self *GuiRepoState) SetCurrentPopupOpts(value *types.CreatePopupPanelOpts)
 }
 
 func (self *GuiRepoState) GetMergeOrRebaseStartedInLazygit() bool {
-	return self.mergeOrRebaseStartedInLazygit
+	return self.mergeOrRebaseStartedInLazygit.Load()
 }
 
 func (self *GuiRepoState) SetMergeOrRebaseStartedInLazygit(value bool) {
-	self.mergeOrRebaseStartedInLazygit = value
+	self.mergeOrRebaseStartedInLazygit.Store(value)
 }
 
 func (self *GuiRepoState) GetScreenMode() types.ScreenMode {
@@ -590,6 +597,11 @@ func (gui *Gui) checkForChangedConfigsThatDontAutoReload(oldConfig *config.UserC
 // resetState reuses the repo state from our repo state map, if the repo was
 // open before; otherwise it creates a new one.
 func (gui *Gui) resetState(startArgs appTypes.StartArgs) types.Context {
+	// Bump the repo generation so that any refresh still in flight for the
+	// previous repo drops its model update instead of applying it here (see
+	// RefreshHelper.onUIThreadUnlessRepoChanged).
+	gui.repoGeneration.Add(1)
+
 	// Un-highlight the current view if there is one. The reason we do this is
 	// that the repo we are switching to might have a different view focused,
 	// and would then show an inactive highlight for the previous view.
@@ -683,6 +695,23 @@ func (gui *Gui) getViewBufferManagerForView(view *gocui.View) *tasks.ViewBufferM
 	}
 
 	return manager
+}
+
+// When scrolling a lazy-loaded view, we read enough lines to fill the viewport
+// plus this many extra screenfuls, so that further scrolling has some runway
+// and doesn't have to block on reading (and re-rendering) more lines on every
+// wheel notch.
+const scrollReadAheadScreenfuls = 3
+
+// readLinesToFillView reads enough lines into the view's buffer to cover
+// everything currently scrolled into view, plus a few screenfuls of read-ahead.
+// Reading is idempotent (see ViewBufferManager.ReadLines), so if the buffer
+// already extends far enough this does nothing.
+func (gui *Gui) readLinesToFillView(view *gocui.View) {
+	if manager := gui.getViewBufferManagerForView(view); manager != nil {
+		viewportBottom := view.OriginY() + view.InnerHeight()
+		manager.ReadLines(viewportBottom + scrollReadAheadScreenfuls*view.InnerHeight())
+	}
 }
 
 func (gui *Gui) initialWindowViewNameMap(contextTree *context.ContextTree) *utils.ThreadSafeMap[string, string] {
@@ -1212,14 +1241,30 @@ func (gui *Gui) onUIThread(f func() error) {
 	})
 }
 
+func (gui *Gui) onUIThreadBackground(f func() error) {
+	gui.g.UpdateBackground(func(*gocui.Gui) error {
+		return f()
+	})
+}
+
 func (gui *Gui) onUIThreadContentOnly(f func() error) {
 	gui.g.UpdateContentOnly(func(*gocui.Gui) error {
 		return f()
 	})
 }
 
+func (gui *Gui) onUIThreadContentOnlyBackground(f func() error) {
+	gui.g.UpdateContentOnlyBackground(func(*gocui.Gui) error {
+		return f()
+	})
+}
+
 func (gui *Gui) onWorker(f func(gocui.Task) error) {
 	gui.g.OnWorker(f)
+}
+
+func (gui *Gui) onWorkerBackground(f func(gocui.Task) error) {
+	gui.g.OnWorkerBackground(f)
 }
 
 func (gui *Gui) getWindowDimensions(informationStr string, appStatus string) map[string]boxlayout.Dimensions {

@@ -118,7 +118,12 @@ func (gui *Gui) getManager(view *gocui.View) *tasks.ViewBufferManager {
 				view.Reset()
 			},
 			func() {
-				gui.render()
+				// As the task reads more lines, the only thing that changes is the
+				// view's content (and its scrollbar); the window layout doesn't. So a
+				// content-only render is enough, and it's much cheaper than a full
+				// layout-and-redraw on every read - which matters a lot when reading
+				// a long diff, where reads happen repeatedly as the user scrolls.
+				gui.renderContentOnly()
 			},
 			func() {
 				// Need to check if the content of the view is well past the origin.
@@ -136,7 +141,14 @@ func (gui *Gui) getManager(view *gocui.View) *tasks.ViewBufferManager {
 				view.SetOrigin(0, 0)
 			},
 			func() gocui.Task {
-				return gui.c.GocuiGui().NewTask()
+				// A background task: rendering content into a view is display
+				// work, not lazygit driving a git operation, so it must not
+				// count towards being busy and block a repo switch. These
+				// renders fire on nearly every focus/selection change, including
+				// the context activation that happens right before a menu/prompt
+				// handler runs (e.g. confirming worktree creation), which would
+				// otherwise make the switch that handler triggers refuse itself.
+				return gui.c.GocuiGui().NewBackgroundTask()
 			},
 		)
 		gui.viewBufferManagerMap[view.Name()] = manager

@@ -44,7 +44,7 @@ func (self *FilesController) GetKeybindings(opts types.KeybindingsOpts) []*types
 		{
 			Keys:              opts.GetKeys(opts.Config.Universal.Select),
 			Handler:           self.withItems(self.press),
-			GetDisabledReason: self.require(self.withFileTreeViewModelMutex(self.itemsSelected(self.canStageSelection))),
+			GetDisabledReason: self.require(self.itemsSelected(self.canStageSelection)),
 			Description:       self.c.Tr.Stage,
 			Tooltip:           self.c.Tr.StageTooltip,
 			DisplayOnScreen:   true,
@@ -91,7 +91,7 @@ func (self *FilesController) GetKeybindings(opts types.KeybindingsOpts) []*types
 		{
 			Keys:              opts.GetKeys(opts.Config.Universal.Edit),
 			Handler:           self.withItems(self.edit),
-			GetDisabledReason: self.require(self.withFileTreeViewModelMutex(self.itemsSelected(self.canEditFiles))),
+			GetDisabledReason: self.require(self.itemsSelected(self.canEditFiles)),
 			Description:       self.c.Tr.Edit,
 			Tooltip:           self.c.Tr.EditFileTooltip,
 			DisplayOnScreen:   true,
@@ -159,7 +159,7 @@ func (self *FilesController) GetKeybindings(opts types.KeybindingsOpts) []*types
 		{
 			Keys:              opts.GetKeys(opts.Config.Universal.Remove),
 			Handler:           self.withItems(self.remove),
-			GetDisabledReason: self.withFileTreeViewModelMutex(self.require(self.itemsSelected(self.canRemove))),
+			GetDisabledReason: self.require(self.itemsSelected(self.canRemove)),
 			Description:       self.c.Tr.Discard,
 			Tooltip:           self.c.Tr.DiscardFileChangesTooltip,
 			OpensMenu:         true,
@@ -196,7 +196,7 @@ func (self *FilesController) GetKeybindings(opts types.KeybindingsOpts) []*types
 			Handler:           self.withItems(self.openMergeConflictMenu),
 			Description:       self.c.Tr.ViewMergeConflictOptions,
 			Tooltip:           self.c.Tr.ViewMergeConflictOptionsTooltip,
-			GetDisabledReason: self.require(self.withFileTreeViewModelMutex(self.itemsSelected(self.canOpenMergeConflictMenu))),
+			GetDisabledReason: self.require(self.itemsSelected(self.canOpenMergeConflictMenu)),
 			OpensMenu:         true,
 			DisplayOnScreen:   true,
 		},
@@ -220,15 +220,6 @@ func (self *FilesController) GetKeybindings(opts types.KeybindingsOpts) []*types
 			Tooltip:           self.c.Tr.ExpandAllTooltip,
 			GetDisabledReason: self.require(self.isInTreeMode),
 		},
-	}
-}
-
-func (self *FilesController) withFileTreeViewModelMutex(callback func() *types.DisabledReason) func() *types.DisabledReason {
-	return func() *types.DisabledReason {
-		self.c.Contexts().Files.FileTreeViewModel.RWMutex.RLock()
-		defer self.c.Contexts().Files.FileTreeViewModel.RWMutex.RUnlock()
-
-		return callback()
 	}
 }
 
@@ -588,11 +579,6 @@ func (self *FilesController) toggleStaged(
 }
 
 func (self *FilesController) pressWithLock(selectedNodes []*filetree.FileNode) error {
-	// Obtaining this lock because optimistic rendering requires us to mutate
-	// the files in our model.
-	self.c.Mutexes().RefreshingFilesMutex.Lock()
-	defer self.c.Mutexes().RefreshingFilesMutex.Unlock()
-
 	// When filtering, expand directory nodes to individual visible file paths
 	// so that only filtered files are staged/unstaged.
 	toPaths := func(nodes []*filetree.FileNode) []string {
@@ -1042,9 +1028,6 @@ func (self *FilesController) toggleStagedAll() error {
 }
 
 func (self *FilesController) toggleStagedAllWithLock() error {
-	self.c.Mutexes().RefreshingFilesMutex.Lock()
-	defer self.c.Mutexes().RefreshingFilesMutex.Unlock()
-
 	root := self.context().FileTreeViewModel.GetRoot()
 
 	stage := func(unstagedNodes []*filetree.FileNode) error {
@@ -1908,10 +1891,10 @@ func (self *FilesController) remove(selectedNodes []*filetree.FileNode) error {
 }
 
 func (self *FilesController) ResetSubmodule(submodule *models.SubmoduleConfig) error {
+	file := self.c.Helpers().WorkingTree.FileForSubmodule(submodule)
 	return self.c.WithWaitingStatus(self.c.Tr.ResettingSubmoduleStatus, func(gocui.Task) error {
 		self.c.LogAction(self.c.Tr.Actions.ResetSubmodule)
 
-		file := self.c.Helpers().WorkingTree.FileForSubmodule(submodule)
 		if file != nil {
 			if err := self.c.Git().WorkingTree.UnStageFile(file.Names(), file.Tracked); err != nil {
 				return err
@@ -1925,7 +1908,7 @@ func (self *FilesController) ResetSubmodule(submodule *models.SubmoduleConfig) e
 			return err
 		}
 
-		self.c.Refresh(types.RefreshOptions{Mode: types.ASYNC, Scope: []types.RefreshableView{types.FILES, types.SUBMODULES}})
+		self.c.RefreshFromWorker(types.RefreshOptions{Mode: types.ASYNC, Scope: []types.RefreshableView{types.FILES, types.SUBMODULES}})
 		return nil
 	})
 }
