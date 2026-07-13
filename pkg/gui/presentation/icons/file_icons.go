@@ -445,7 +445,7 @@ var extIconMap = map[string]IconProperties{
 	".gz":             {Icon: "\U000f05c4", Color: ctpText},     // 󰗄
 	".h":              {Icon: "\U000f0af5", Color: ctpMauve},    // 󰫵
 	".haml":           {Icon: "\U000f0174", Color: ctpText},     // 󰅴
-	".hbs":            {Icon: "\U000f031e", Color: ctpGreen},    // 󰌞
+	".hbs":            {Icon: "\ue7f7", Color: ctpPeach},        // 
 	".hc":             {Icon: "\U000f00a2", Color: ctpPeach},    // 󰂢
 	".heex":           {Icon: "\ue62d", Color: ctpRed},          // 
 	".hex":            {Icon: "\U000f02d8", Color: ctpYellow},   // 󰋘
