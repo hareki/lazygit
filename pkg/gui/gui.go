@@ -50,7 +50,6 @@ import (
 	"github.com/jesseduffield/lazygit/pkg/utils"
 	"github.com/samber/lo"
 	"github.com/sasha-s/go-deadlock"
-	"gopkg.in/ozeidan/fuzzy-patricia.v3/patricia"
 )
 
 const StartupPopupVersion = 5
@@ -396,7 +395,7 @@ func (gui *Gui) onNewRepo(startArgs appTypes.StartArgs, contextKey types.Context
 			}
 
 			gui.c.Log.Info("Receiving focus - refreshing")
-			gui.helpers.Refresh.Refresh(types.RefreshOptions{Mode: types.ASYNC})
+			gui.helpers.Refresh.Refresh(types.RefreshOptions{})
 			return reloadErr
 		}
 
@@ -625,9 +624,7 @@ func (gui *Gui) resetState(startArgs appTypes.StartArgs) types.Context {
 
 		// setting this to nil so we don't get stuck based on a popup that was
 		// previously opened
-		gui.Mutexes.PopupMutex.Lock()
 		gui.State.CurrentPopupOpts = nil
-		gui.Mutexes.PopupMutex.Unlock()
 
 		return gui.c.Context().Current()
 	}
@@ -646,7 +643,6 @@ func (gui *Gui) resetState(startArgs appTypes.StartArgs) types.Context {
 			FilteredReflogCommits: make([]*models.Commit, 0),
 			ReflogCommits:         make([]*models.Commit, 0),
 			BisectInfo:            git_commands.NewNullBisectInfo(),
-			FilesTrie:             patricia.NewTrie(),
 			Authors:               map[string]*models.Author{},
 			MainBranches:          git_commands.NewMainBranches(gui.c.Common, gui.os.Cmd),
 			HashPool:              &utils.StringPool{},
@@ -818,16 +814,28 @@ func NewGui(
 
 	gui.PopupHandler = popup.NewPopupHandler(
 		cmn,
+		// Raising a popup or menu pushes a context and mutates the popup views,
+		// and it can be triggered from a worker goroutine (e.g. a
+		// WithWaitingStatus handler that hits a merge conflict and asks the user
+		// how to proceed). Bounce the creation onto the UI thread so it can't
+		// race the layout/draw code. Doing it here, at the one point where these
+		// producers are injected, keeps every caller oblivious to the threading.
 		func(ctx goContext.Context, opts types.CreatePopupPanelOpts) {
-			gui.helpers.Confirmation.CreatePopupPanel(ctx, opts)
+			gui.onUIThread(func() error {
+				gui.helpers.Confirmation.CreatePopupPanel(ctx, opts)
+				return nil
+			})
 		},
-		func() error { gui.c.Refresh(types.RefreshOptions{Mode: types.ASYNC}); return nil },
+		func() error { gui.c.Refresh(types.RefreshOptions{}); return nil },
 		func() { gui.State.ContextMgr.Pop() },
 		func() types.Context { return gui.State.ContextMgr.Current() },
-		gui.createMenu,
+		func(opts types.CreateMenuOptions) error {
+			gui.onUIThread(func() error { return gui.createMenu(opts) })
+			return nil
+		},
 		func(message string, f func(gocui.Task) error) { gui.helpers.AppStatus.WithWaitingStatus(message, f) },
-		func(message string, f func() error) error {
-			return gui.helpers.AppStatus.WithWaitingStatusSync(message, f)
+		func(message string, f func(gocui.Task) error) {
+			gui.helpers.AppStatus.WithWaitingStatusBlockingInput(message, f)
 		},
 		func(message string, kind types.ToastKind) { gui.helpers.AppStatus.Toast(message, kind) },
 		func() string { return gui.Views.Prompt.TextArea.GetContent() },
@@ -1046,7 +1054,7 @@ func (gui *Gui) runSubprocessWithSuspenseAndRefresh(subprocess *oscommands.CmdOb
 		return err
 	}
 
-	gui.c.Refresh(types.RefreshOptions{Mode: types.ASYNC})
+	gui.c.Refresh(types.RefreshOptions{})
 
 	return nil
 }
@@ -1123,7 +1131,7 @@ func (gui *Gui) loadNewRepo() error {
 		return err
 	}
 
-	gui.c.Refresh(types.RefreshOptions{Mode: types.ASYNC})
+	gui.c.Refresh(types.RefreshOptions{})
 
 	if err := gui.os.UpdateWindowTitle(); err != nil {
 		return err

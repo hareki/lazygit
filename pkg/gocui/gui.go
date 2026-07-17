@@ -148,6 +148,10 @@ type Gui struct {
 	maxX, maxY               int
 	outputMode               OutputMode
 	stop                     chan struct{}
+	// loopExited is closed when MainLoop returns, so callers (e.g. the
+	// integration-test harness) can wait for the event loop to actually finish
+	// rather than polling or sleeping a fixed interval.
+	loopExited chan struct{}
 
 	// BgColor and FgColor allow to configure the background and foreground
 	// colors of the GUI.
@@ -210,6 +214,14 @@ type Gui struct {
 	// MainLoop starts. IsUIThread compares against it. Written once, read from
 	// worker goroutines, so it's atomic.
 	uiThreadID atomic.Int64
+
+	// blockInputCount, when greater than zero, withholds keyboard input from
+	// the handlers: key events are buffered into bufferedKeyEvents and replayed
+	// once the count drops back to zero, while mouse clicks and hover are
+	// dropped outright. It's a counter so blocking can nest. Both fields are
+	// only touched on the UI thread. See BeginBlockingEvents.
+	blockInputCount   int
+	bufferedKeyEvents []GocuiEvent
 }
 
 // SetCursorStyle forces a global cursor style (shape + blink) if the terminal supports it.
@@ -262,6 +274,7 @@ func NewGui(opts NewGuiOpts) (*Gui, error) {
 	g.outputMode = opts.OutputMode
 
 	g.stop = make(chan struct{})
+	g.loopExited = make(chan struct{})
 
 	g.gEvents = make(chan GocuiEvent, 20)
 	g.userEvents = newUserEventQueue()
@@ -289,6 +302,12 @@ func NewGui(opts NewGuiOpts) (*Gui, error) {
 	g.PrevSearchMatchKeys = []Key{NewKeyRune('N')}
 
 	g.playRecording = opts.PlayRecording
+
+	// Record the UI thread here, at construction. This assumes NewGui is called
+	// on the same goroutine that will run MainLoop, which holds for all our
+	// callers -- and it means IsUIThread is already correct for the UI work that
+	// runs during startup, before we reach MainLoop.
+	g.uiThreadID.Store(goid.Get())
 
 	return g, nil
 }
@@ -350,6 +369,11 @@ func (g *Gui) Close() {
 	Screen.Fini()
 }
 
+// LoopExited returns a channel that is closed once MainLoop has returned.
+func (g *Gui) LoopExited() <-chan struct{} {
+	return g.loopExited
+}
+
 // Size returns the terminal's size.
 func (g *Gui) Size() (x, y int) {
 	return g.maxX, g.maxY
@@ -387,7 +411,7 @@ func (g *Gui) SetView(name string, x0, y0, x1, y1 int, overlaps byte) (*View, er
 		v.y1 = y1
 
 		if sizeChanged {
-			v.clearViewLines()
+			v.ClearViewLines()
 
 			if v.Editable {
 				cursorX, cursorY := v.TextArea.GetCursorXY()
@@ -816,6 +840,42 @@ func (g *Gui) IsUIThread() bool {
 	return goid.Get() == g.uiThreadID.Load()
 }
 
+// BeginBlockingEvents starts withholding keyboard input from the handlers, so a
+// long-running operation can't be disrupted by keys the user presses while it
+// runs. Keys are buffered and replayed once EndBlockingEvents balances this
+// call; mouse clicks and hover are dropped for the duration. Scrolling,
+// resizing, focus changes and all rendering keep working throughout. It's a
+// counter, so blocking nests; every call must be paired with EndBlockingEvents.
+//
+// Must be called on the UI thread. Callers arrange this by beginning the block
+// synchronously from the keybinding handler, before dispatching the operation
+// to a worker — beginning it from the worker would race the next queued
+// keypress, which is exactly the input we mean to withhold.
+func (g *Gui) BeginBlockingEvents() {
+	g.blockInputCount++
+}
+
+// EndBlockingEvents balances a BeginBlockingEvents call. When the last nested
+// block ends, the keys buffered while blocked are replayed in order through the
+// normal dispatch path, so they act on the now-current context (a key whose
+// binding no longer exists is simply ignored, just as if it had been pressed
+// now). Must be called on the UI thread.
+func (g *Gui) EndBlockingEvents() error {
+	g.blockInputCount--
+	if g.blockInputCount > 0 {
+		return nil
+	}
+
+	buffered := g.bufferedKeyEvents
+	g.bufferedKeyEvents = nil
+	for i := range buffered {
+		if err := g.handleEvent(&buffered[i]); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // OnUIThreadAndWait runs f on the main event-loop goroutine and blocks the
 // caller until f has run, returning f's error. Use it to read UI-thread-owned
 // state (the model, contexts) from a worker without racing the UI thread.
@@ -931,7 +991,7 @@ func (g *Gui) SetManagerFunc(manager func(*Gui) error) {
 // MainLoop runs the main loop until an error is returned. A successful
 // finish should return ErrQuit.
 func (g *Gui) MainLoop() error {
-	g.uiThreadID.Store(goid.Get())
+	defer close(g.loopExited)
 
 	go func() {
 		for {
@@ -1062,6 +1122,17 @@ func (g *Gui) processRemainingEvents() (bool, error) {
 // handleEvent handles an event, based on its type (key-press, error,
 // etc.)
 func (g *Gui) handleEvent(ev *GocuiEvent) error {
+	if g.blockInputCount > 0 && eventWithheldWhileBlocking(ev) {
+		if ev.Type == eventKey {
+			// Buffer keys so they replay against fresh state on unblock.
+			g.bufferedKeyEvents = append(g.bufferedKeyEvents, *ev)
+		}
+		// Mouse clicks and hover fall through to here without being buffered:
+		// replaying them once the operation has changed the layout underneath
+		// them would target the wrong thing, so we drop them outright.
+		return nil
+	}
+
 	switch ev.Type {
 	case eventKey, eventMouse, eventMouseMove:
 		return g.onKey(ev)
@@ -1077,6 +1148,24 @@ func (g *Gui) handleEvent(ev *GocuiEvent) error {
 		return nil
 	default:
 		return nil
+	}
+}
+
+// eventWithheldWhileBlocking reports whether an event must not reach the
+// handlers while input is blocked (see BeginBlockingEvents). Key events are
+// withheld (buffered for replay); mouse clicks and hover are withheld (dropped).
+// Everything else — mouse scrolling, resize, focus, paste, errors — flows
+// through as usual.
+func eventWithheldWhileBlocking(ev *GocuiEvent) bool {
+	switch ev.Type {
+	case eventKey:
+		return true
+	case eventMouse:
+		return !IsMouseScrollKey(ev.Key.KeyName())
+	case eventMouseMove:
+		return true
+	default:
+		return false
 	}
 }
 
@@ -1416,7 +1505,7 @@ func (g *Gui) flush() error {
 	// if GUI's size has changed, we need to redraw all views
 	if maxX != g.maxX || maxY != g.maxY {
 		for _, v := range g.views {
-			v.clearViewLines()
+			v.ClearViewLines()
 		}
 	}
 	g.maxX, g.maxY = maxX, maxY
@@ -1455,7 +1544,7 @@ func viewsToRedrawContentOnly(views []*View) []*View {
 	redrawIndexes := set.New[int]()
 
 	for i, v := range views {
-		if !v.tainted && !redrawIndexes.Includes(i) {
+		if !v.IsTainted() && !redrawIndexes.Includes(i) {
 			continue
 		}
 
