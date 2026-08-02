@@ -1190,11 +1190,10 @@ func (self *RefreshHelper) refreshFilesAndSubmodules(captured capturedFilesState
 	// the Files render below, so the render reflects the selection.
 	// scrollStartupFileIntoView then queues its own focus, which runs after the
 	// render (it needs the laid-out view to compute the scroll origin).
-	self.onUIThreadUnlessRepoChanged(env, func() error {
+	self.onUIThreadUnlessRepoChanged(env, func() {
 		if self.selectStartupFileIfNeeded() {
 			self.scrollStartupFileIntoView()
 		}
-		return nil
 	})
 
 	self.refreshView(self.c.Contexts().Submodules, env)
