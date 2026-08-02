@@ -672,7 +672,10 @@ func (gui *Gui) resetState(startArgs appTypes.StartArgs) types.Context {
 
 func (gui *Gui) loadCachedPullRequests() []*models.GithubPullRequest {
 	repoPath := gui.git.RepoPaths.RepoPath()
-	cachedPRs := gui.c.GetAppState().GithubPullRequests[repoPath]
+	cachedPRs, err := gui.Config.GetCachedGithubPullRequests(repoPath)
+	if err != nil {
+		gui.Log.Warnf("error loading GitHub pull request cache: %v", err)
+	}
 
 	return lo.Map(cachedPRs, func(cached config.CachedPullRequest, _ int) *models.GithubPullRequest {
 		return &models.GithubPullRequest{
@@ -680,6 +683,7 @@ func (gui *Gui) loadCachedPullRequests() []*models.GithubPullRequest {
 			Number:      cached.Number,
 			Title:       cached.Title,
 			State:       cached.State,
+			ChecksState: cached.ChecksState,
 			Url:         cached.Url,
 			HeadRepositoryOwner: models.GithubRepositoryOwner{
 				Login: cached.HeadRepositoryOwner,

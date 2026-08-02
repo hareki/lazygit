@@ -1783,15 +1783,13 @@ func (self *RefreshHelper) savePullRequestsToCache(prs []*models.GithubPullReque
 			Number:              pr.Number,
 			Title:               pr.Title,
 			State:               pr.State,
+			ChecksState:         pr.ChecksState,
 			Url:                 pr.Url,
 			HeadRepositoryOwner: pr.HeadRepositoryOwner.Login,
 		}
 	})
 
-	appState := self.c.GetAppState()
-	if appState.GithubPullRequests == nil {
-		appState.GithubPullRequests = make(map[string][]config.CachedPullRequest)
+	if err := self.c.GetConfig().SaveCachedGithubPullRequests(repoPath, cached); err != nil {
+		self.c.Log.Warnf("error saving GitHub pull request cache: %v", err)
 	}
-	appState.GithubPullRequests[repoPath] = cached
-	self.c.SaveAppStateAndLogError()
 }
