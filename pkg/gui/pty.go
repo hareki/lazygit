@@ -58,22 +58,23 @@ func (p ptyCmd) GetProcess() *os.Process { return p.process }
 // pseudo-terminal meaning we'll get the behaviour we want from the underlying
 // command.
 func (gui *Gui) newPtyTask(view *gocui.View, cmd *exec.Cmd, prefix string) error {
-	width := view.InnerWidth()
-
-	// Set LAZYGIT_COLUMNS for diff renderer scripts that can't query the terminal width directly.
-	cmd.Env = append(cmd.Env, fmt.Sprintf("LAZYGIT_COLUMNS=%d", width))
-
 	if gui.stateAccessor.GetDiffRendererConfigManager().GetDiffRendererType() == config.DiffRendererType_RawGit {
 		// If we're not using a custom diff renderer, then we don't need to use a pty
+		cmd.Env = append(cmd.Env, fmt.Sprintf("LAZYGIT_COLUMNS=%d", view.InnerWidth()))
 		return gui.newCmdTask(view, cmd, prefix)
 	}
 
 	// Run the pty after layout so that it gets the correct size
 	gui.afterLayout(func() error {
 		// Need to get the width and the pager command again because the layout might have
-		// changed the size of the view
-		width = view.InnerWidth()
+		// changed the size of the view. Reading it before layout would hand diff
+		// renderers the previous file's geometry (e.g. the half-width of a
+		// staged/unstaged split) via LAZYGIT_COLUMNS.
+		width := view.InnerWidth()
 		pager := gui.stateAccessor.GetDiffRendererConfigManager().GetStdinFilterCommand(width)
+
+		// Set LAZYGIT_COLUMNS for diff renderer scripts that can't query the terminal width directly.
+		cmd.Env = append(cmd.Env, fmt.Sprintf("LAZYGIT_COLUMNS=%d", width))
 
 		cmdStr := strings.Join(cmd.Args, " ")
 
