@@ -46,6 +46,8 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 | `` v `` | 드래그 선택 전환 |  |
 | `` <shift+down> `` | Range select down |  |
 | `` <shift+up> `` | Range select up |  |
+| `` <left> `` | Collapse directory / go to parent |  |
+| `` <right> `` | Expand directory |  |
 | `` / `` | 검색 시작 |  |
 | `` H `` | 우 스크롤 |  |
 | `` L `` | 좌 스크롤 |  |

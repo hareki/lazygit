@@ -46,6 +46,8 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 | `` v `` | 切换拖动选择 |  |
 | `` <shift+down> `` | 向下扩展选择范围 |  |
 | `` <shift+up> `` | 向上扩展选择范围 |  |
+| `` <left> `` | Collapse directory / go to parent |  |
+| `` <right> `` | Expand directory |  |
 | `` / `` | 开始搜索 |  |
 | `` H `` | 向左滚动 |  |
 | `` L `` | 向右滚动 |  |

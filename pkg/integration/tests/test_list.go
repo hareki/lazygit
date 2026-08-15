@@ -249,6 +249,7 @@ var tests = []*components.IntegrationTest{
 	file.RenamedFiles,
 	file.RenamedFilesNoRootItem,
 	file.SelectViaCliArg,
+	file.StageAllWithoutChangedFiles,
 	file.StageChildrenRangeSelect,
 	file.StageDeletedRangeSelect,
 	file.StageRangeSelect,
@@ -557,4 +558,5 @@ var tests = []*components.IntegrationTest{
 	worktree.SeparateWorkTreeConfig,
 	worktree.SymlinkIntoRepoSubdir,
 	worktree.WorktreeInRepo,
+	worktree.WorktreeInsideRepo,
 }

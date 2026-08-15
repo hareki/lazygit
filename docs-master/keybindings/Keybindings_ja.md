@@ -46,6 +46,8 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 | `` v `` | 範囲選択を切り替え |  |
 | `` <shift+down> `` | 範囲選択を下に |  |
 | `` <shift+up> `` | 範囲選択を上に |  |
+| `` <left> `` | Collapse directory / go to parent |  |
+| `` <right> `` | Expand directory |  |
 | `` / `` | 現在のビューをテキストで検索 |  |
 | `` H `` | 左にスクロール |  |
 | `` L `` | 右にスクロール |  |

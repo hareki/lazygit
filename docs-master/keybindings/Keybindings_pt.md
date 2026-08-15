@@ -46,6 +46,8 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 | `` v `` | Toggle range select |  |
 | `` <shift+down> `` | Range select down |  |
 | `` <shift+up> `` | Range select up |  |
+| `` <left> `` | Collapse directory / go to parent |  |
+| `` <right> `` | Expand directory |  |
 | `` / `` | Pesquisar na visualização atual por texto |  |
 | `` H `` | Rolar à esquerda |  |
 | `` L `` | Scroll para a direita |  |

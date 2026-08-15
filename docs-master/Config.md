@@ -97,8 +97,8 @@ gui:
 
   # Fraction of the total screen width to use for the left side section. You may
   # want to pick a small number (e.g. 0.2) if you're using a narrow screen, so
-  # that you can see more of the main section.
-  # Number from 0 to 1.0.
+  # that you can see more of the main section. Values greater than 1 are treated
+  # as a literal width measured in columns.
   sidePanelWidth: 0.3333
 
   # If true, increase the height of the focused side window; creating an accordion
@@ -357,6 +357,12 @@ gui:
   # If true, when using the panel jump keys (default 1 through 5) and target panel
   # is already active, go to next tab instead
   switchTabsWithPanelJumpKeys: false
+
+  # Cursor style for text inputs and editable areas.
+  # One of: '' (default terminal setting) | 'default' | 'blinkingBlock' |
+  # 'steadyBlock' | 'blinkingUnderline' | 'steadyUnderline' | 'blinkingBar' |
+  # 'steadyBar'
+  cursorStyle: ""
 
 # Config relating to git
 git:
@@ -757,6 +763,8 @@ keybinding:
     copyFileInfoToClipboard: "y"
     collapseAll: '-'
     expandAll: =
+    collapseDirectory: <left>
+    expandDirectory: <right>
   branches:
     createPullRequest: o
     viewPullRequestOptions: O

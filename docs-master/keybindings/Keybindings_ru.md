@@ -46,6 +46,8 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 | `` v `` | Переключить выборку перетаскивания |  |
 | `` <shift+down> `` | Range select down |  |
 | `` <shift+up> `` | Range select up |  |
+| `` <left> `` | Collapse directory / go to parent |  |
+| `` <right> `` | Expand directory |  |
 | `` / `` | Найти |  |
 | `` H `` | Прокрутить влево |  |
 | `` L `` | Прокрутить вправо |  |

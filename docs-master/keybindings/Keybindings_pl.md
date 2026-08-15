@@ -46,6 +46,8 @@ _This file is auto-generated. To update, make the changes in the pkg/i18n direct
 | `` v `` | Przełącz zaznaczenie zakresu |  |
 | `` <shift+down> `` | Zaznacz zakres w dół |  |
 | `` <shift+up> `` | Zaznacz zakres w górę |  |
+| `` <left> `` | Collapse directory / go to parent |  |
+| `` <right> `` | Expand directory |  |
 | `` / `` | Szukaj w bieżącym widoku po tekście |  |
 | `` H `` | Przewiń w lewo |  |
 | `` L `` | Przewiń w prawo |  |
