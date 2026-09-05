@@ -27,9 +27,9 @@ func (gui *Gui) onResize() error {
 	defer gui.Mutexes.PtyMutex.Unlock()
 
 	for viewName, p := range gui.viewPtmxMap {
-		// TODO: handle resizing properly: we need to actually clear the main view
-		// and re-read the output from our pty. Or we could just re-run the original
-		// command from scratch
+		// A width change re-renders the view from scratch (see rerenderMainViews):
+		// a diff renderer lays its output out for the width it started with. So
+		// the resize here matters for height changes only.
 		view, _ := gui.g.View(viewName)
 		cols, rows := gui.desiredPtySize(view)
 		if err := p.Resize(cols, rows); err != nil {

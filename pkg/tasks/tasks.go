@@ -104,6 +104,10 @@ type ViewBufferManager struct {
 	// must not clamp the view's scroll position to the amount loaded so far.
 	loading atomic.Bool
 
+	// Whether StartLoading has announced a task that NewTask has not created
+	// yet; see IsTaskPending.
+	pending atomic.Bool
+
 	// beforeStart is the function that is called before starting a new task
 	beforeStart  func()
 	refreshView  func()
@@ -209,9 +213,19 @@ func (self *ViewBufferManager) IsLoading() bool {
 // synchronously when a command/pty task is started, before the task's goroutine
 // runs, so that a layout pass happening in between doesn't clamp the scroll
 // position to the not-yet-loaded content. It is cleared when the task reaches
-// the end of its input.
+// the end of its input. Until NewTask creates the task, IsTaskPending reports
+// it as pending.
 func (self *ViewBufferManager) StartLoading() {
 	self.loading.Store(true)
+	self.pending.Store(true)
+}
+
+// IsTaskPending reports whether a task announced by StartLoading has not been
+// created by NewTask yet. A pty task is created only after the next layout
+// pass, so that it can size itself from the view's final dimensions; until
+// then the view's content is about to be replaced by one that hasn't started.
+func (self *ViewBufferManager) IsTaskPending() bool {
+	return self.pending.Load()
 }
 
 func (self *ViewBufferManager) ReadToEnd(then func()) {
@@ -607,6 +621,8 @@ type TaskOpts struct {
 }
 
 func (self *ViewBufferManager) NewTask(f func(TaskOpts) error, key string) error {
+	self.pending.Store(false)
+
 	gocuiTask := self.newGocuiTask()
 
 	var completeTaskOnce sync.Once

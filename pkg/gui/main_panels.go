@@ -139,3 +139,35 @@ func (gui *Gui) refreshMainViews(opts types.RefreshMainOpts) {
 func (gui *Gui) splitMainPanel(splitMainPanel bool) {
 	gui.State.SplitMainPanel = splitMainPanel
 }
+
+// rerenderMainViews re-renders the content of the main views for their
+// current width. It's called when that width changes: a diff renderer is told
+// the width of the view it renders into when it starts (see newPtyTask), so
+// its output is laid out for the old width once the view is resized. Content
+// that doesn't depend on the width is re-rendered along with it; that's cheap
+// and width changes are infrequent, so we don't bother telling them apart.
+func (gui *Gui) rerenderMainViews() {
+	normal := gui.State.Contexts.Normal
+
+	// The other main contexts (staging, patch building, merge conflicts) draw
+	// their own content into the main window; re-rendering the side context
+	// would put the normal views back on top of them.
+	if gui.helpers.Window.GetViewNameForWindow(normal.GetWindowName()) != normal.GetViewName() {
+		return
+	}
+
+	// Full screen mode on a side panel squeezes the main view to nothing, and
+	// there's no point rendering into that; the view is re-rendered once it
+	// gets its width back.
+	if normal.GetView().InnerWidth() == 0 {
+		return
+	}
+
+	// A pty task that is still waiting for the layout to start (see newPtyTask)
+	// reads the new width itself.
+	if manager := gui.getViewBufferManagerForView(normal.GetView()); manager != nil && manager.IsTaskPending() {
+		return
+	}
+
+	gui.c.Context().CurrentSide().HandleRenderToMain()
+}

@@ -39,10 +39,7 @@ var DiffRendererWidthFollowsMainView = NewIntegrationTest(NewIntegrationTestArgs
 			Press(keys.Universal.FocusMainView)
 		t.Views().Main().
 			IsFocused().
-			/* EXPECTED:
 			Content(Contains("width=148"))
-			ACTUAL: */
-			Content(Contains("width=98"))
 
 		// Leaving the main view brings the side panels back.
 		t.Views().Main().
