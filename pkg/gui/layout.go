@@ -205,10 +205,14 @@ func (gui *Gui) layout(g *gocui.Gui) error {
 
 	mainViewWidth, mainViewHeight := gui.Views.Main.Size()
 	if mainViewWidth != gui.PrevLayout.MainWidth || mainViewHeight != gui.PrevLayout.MainHeight {
+		widthChanged := mainViewWidth != gui.PrevLayout.MainWidth
 		gui.PrevLayout.MainWidth = mainViewWidth
 		gui.PrevLayout.MainHeight = mainViewHeight
 		if err := gui.onResize(); err != nil {
 			return err
+		}
+		if widthChanged {
+			gui.rerenderMainViews()
 		}
 	}
 
