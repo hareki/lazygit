@@ -226,6 +226,7 @@ var tests = []*components.IntegrationTest{
 	diff.DiffAndApplyPatch,
 	diff.DiffCommits,
 	diff.DiffNonStickyRange,
+	diff.DiffRendererWidthFollowsMainView,
 	diff.IgnoreWhitespace,
 	diff.RenameSimilarityThresholdChange,
 	file.ClickArrowToCollapse,
