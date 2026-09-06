@@ -2,6 +2,7 @@ package gui
 
 import (
 	"github.com/jesseduffield/lazygit/pkg/gocui"
+	"github.com/jesseduffield/lazygit/pkg/gui/context"
 	"github.com/jesseduffield/lazygit/pkg/gui/types"
 )
 
@@ -170,4 +171,18 @@ func (gui *Gui) rerenderMainViews() {
 	}
 
 	gui.c.Context().CurrentSide().HandleRenderToMain()
+}
+
+// reApplySearch runs a search the view holds again over the content a render has just
+// finished putting there, so that the matches highlighted and the "x of y" status
+// describe what the view shows now rather than what it showed when the search was
+// typed. Call it once the content is final.
+func (gui *Gui) reApplySearch(view *gocui.View) {
+	// While the prompt is open, the search view holds what the user is typing, and the
+	// status would be written over it.
+	if gui.State.ContextMgr.Current().GetKey() == context.SEARCH_CONTEXT_KEY {
+		return
+	}
+
+	view.RefreshSearch()
 }
