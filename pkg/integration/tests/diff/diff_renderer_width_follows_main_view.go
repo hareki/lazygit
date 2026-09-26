@@ -11,7 +11,7 @@ var DiffRendererWidthFollowsMainView = NewIntegrationTest(NewIntegrationTestArgs
 	Skip:         false,
 	SetupConfig: func(cfg *config.AppConfig) {
 		cfg.GetUserConfig().Git.DiffRenderers = []config.DiffRendererConfig{
-			{Command: "echo width=$LAZYGIT_COLUMNS && cat"},
+			{Command: "echo width=$COLUMNS && cat"},
 		}
 	},
 	SetupRepo: func(shell *Shell) {

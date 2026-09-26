@@ -218,7 +218,7 @@ func (self *ViewBufferManager) StartLoading() {
 }
 
 // IsTaskPending reports whether a task announced by StartLoading has not been
-// created by NewTask yet. A pty task is created only after the next layout
+// created by NewTask yet. A render task is created only after the next layout
 // pass, so that it can size itself from the view's final dimensions; until
 // then the view's content is about to be replaced by one that hasn't started.
 func (self *ViewBufferManager) IsTaskPending() bool {

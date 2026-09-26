@@ -20,8 +20,8 @@ func (gui *Gui) runTaskForView(view *gocui.View, task types.UpdateTask) error {
 	case *types.RunCommandTask:
 		return gui.newCmdTask(view, v.Cmd, v.Prefix)
 
-	case *types.RunPtyTask:
-		return gui.newPtyTask(view, v.Cmd, v.Prefix)
+	case *types.RunDiffRendererTask:
+		return gui.newRenderTask(view, v.Cmd, v.Prefix)
 	}
 
 	return nil
@@ -143,7 +143,7 @@ func (gui *Gui) splitMainPanel(splitMainPanel bool) {
 
 // rerenderMainViews re-renders the content of the main views for their
 // current width. It's called when that width changes: a diff renderer is told
-// the width of the view it renders into when it starts (see newPtyTask), so
+// the width of the view it renders into when it starts (see newRenderTask), so
 // its output is laid out for the old width once the view is resized. Content
 // that doesn't depend on the width is re-rendered along with it; that's cheap
 // and width changes are infrequent, so we don't bother telling them apart.
@@ -164,8 +164,8 @@ func (gui *Gui) rerenderMainViews() {
 		return
 	}
 
-	// A pty task that is still waiting for the layout to start (see newPtyTask)
-	// reads the new width itself.
+	// A render task that is still waiting for the layout to start (see
+	// newRenderTask) reads the new width itself.
 	if manager := gui.getViewBufferManagerForView(normal.GetView()); manager != nil && manager.IsTaskPending() {
 		return
 	}
