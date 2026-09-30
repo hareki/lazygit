@@ -738,7 +738,7 @@
               "uniqueItems": true,
               "description": "Border color of non-focused windows",
               "default": [
-                "dim"
+                "default"
               ]
             },
             "searchingActiveBorderColor": {
