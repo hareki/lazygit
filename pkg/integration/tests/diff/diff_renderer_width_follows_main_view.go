@@ -10,8 +10,10 @@ var DiffRendererWidthFollowsMainView = NewIntegrationTest(NewIntegrationTestArgs
 	ExtraCmdArgs: []string{},
 	Skip:         false,
 	SetupConfig: func(cfg *config.AppConfig) {
+		// The renderer announces the OSC 1717 metadata protocol so that focusing
+		// the main view keeps its output instead of swapping in git's own diff.
 		cfg.GetUserConfig().Git.DiffRenderers = []config.DiffRendererConfig{
-			{Command: "echo width=$COLUMNS && cat"},
+			{Command: `printf '\033]1717;1\007'; echo width=$COLUMNS && cat`},
 		}
 	},
 	SetupRepo: func(shell *Shell) {
