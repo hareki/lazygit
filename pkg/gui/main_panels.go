@@ -559,12 +559,6 @@ func (gui *Gui) rerenderMainViews() {
 		return
 	}
 
-	// A render task that is still waiting for the layout to start (see
-	// newRenderTask) reads the new width itself.
-	if manager := gui.getViewBufferManagerForView(normal.GetView()); manager != nil && manager.IsTaskPending() {
-		return
-	}
-
 	gui.c.Context().CurrentSide().HandleRenderToMain()
 }
 

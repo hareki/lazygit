@@ -124,10 +124,6 @@ type ViewBufferManager struct {
 	// over, whatever it shows. Guarded by taskIDMutex, like the task key.
 	loadingTaskID int
 
-	// Whether StartLoading has announced a task that NewReservedTask has not
-	// created yet; see IsTaskPending.
-	pending atomic.Bool
-
 	// beforeStart is the function that is called before starting a new task
 	beforeStart  func()
 	refreshView  func()
@@ -364,22 +360,11 @@ func (self *ViewBufferManager) IsLoading() bool {
 // its goroutine runs and before the next layout pass, so that the layout doesn't
 // clamp the scroll position to the not-yet-loaded content. The view stops loading
 // when the task reaches the end of its input, or when another task is asked for.
-// Until NewReservedTask creates the task, IsTaskPending reports it as pending.
 func (self *ViewBufferManager) StartLoading() {
 	self.taskIDMutex.Lock()
 	defer self.taskIDMutex.Unlock()
 
 	self.loadingTaskID = self.newTaskID
-	self.pending.Store(true)
-}
-
-// IsTaskPending reports whether a task announced by StartLoading has not been
-// created by NewReservedTask yet. A render task is created only after the next
-// layout pass, so that it can size itself from the view's final dimensions;
-// until then the view's content is about to be replaced by one that hasn't
-// started.
-func (self *ViewBufferManager) IsTaskPending() bool {
-	return self.pending.Load()
 }
 
 // finishLoading records that the given task has read all of its input. If the
@@ -904,8 +889,6 @@ func (self *ViewBufferManager) NewTask(f func(TaskOpts) error, key string) error
 // NewReservedTask creates the task that the reservation was made for. It doesn't
 // run if another task has been asked for since the reservation was made.
 func (self *ViewBufferManager) NewReservedTask(reservation TaskReservation, f func(TaskOpts) error, key string) error {
-	self.pending.Store(false)
-
 	gocuiTask := self.newGocuiTask()
 
 	var completeTaskOnce sync.Once
