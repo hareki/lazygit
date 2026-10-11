@@ -422,6 +422,8 @@ type TranslationSet struct {
 	JumpToFileInDiffTooltip               string
 	OnlyOneFileInDiff                     string
 	NoFileInDiffNamed                     string
+	FileOfDiffDoesNotExist                string
+	NoFileOfDiffExists                    string
 	PrevConflict                          string
 	NextConflict                          string
 	SelectPrevHunk                        string
@@ -748,6 +750,9 @@ type TranslationSet struct {
 	CopySelectedDiffLinesToClipboard      string
 	SelectedDiffLinesCopiedToast          string
 	SelectionNotFoundInDiffToast          string
+	DiffLinesFileNotFound                 string
+	DiffLinesNotFound                     string
+	CommitNotInCommitsPanel               string
 	NoFilesStagedTitle                    string
 	NoFilesStagedPrompt                   string
 	BranchNotFoundTitle                   string
@@ -1614,6 +1619,8 @@ func EnglishTranslationSet() *TranslationSet {
 		JumpToFileInDiffTooltip:              "Pick one of the files of the diff shown in the main view, and scroll the main view to it. The focus stays in this panel.",
 		OnlyOneFileInDiff:                    "There is only one file in this diff",
 		NoFileInDiffNamed:                    "This diff has no file named '{{.path}}'",
+		FileOfDiffDoesNotExist:               "File '{{.path}}' doesn't exist in the working tree",
+		NoFileOfDiffExists:                   "None of the selected files exist in the working tree at '{{.worktreePath}}'",
 		PrevConflict:                         "Previous conflict",
 		NextConflict:                         "Next conflict",
 		SelectPrevHunk:                       "Previous hunk",
@@ -1938,6 +1945,9 @@ func EnglishTranslationSet() *TranslationSet {
 		CopySelectedDiffLinesToClipboard:         "Copy selected diff lines to clipboard",
 		SelectedDiffLinesCopiedToast:             "Selected diff lines copied to clipboard",
 		SelectionNotFoundInDiffToast:             "Nothing in the selection could be found in the diff",
+		DiffLinesFileNotFound:                    "Can't find the file '{{.path}}' that the selected lines belong to",
+		DiffLinesNotFound:                        "Can't find the selected lines in the diff of '{{.path}}'",
+		CommitNotInCommitsPanel:                  "Can't find commit {{.hash}} in the commits panel",
 		CommitPrefixPatternError:                 "Error in commitPrefix pattern",
 		NoFilesStagedTitle:                       "No files staged",
 		NoFilesStagedPrompt:                      "You have not staged any files. Commit all files?",
