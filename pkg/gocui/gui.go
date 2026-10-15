@@ -1059,13 +1059,25 @@ func (g *Gui) OnWorkerBackground(f func(Task) error) {
 
 func (g *Gui) onWorker(f func(Task) error, background bool) {
 	task := g.taskManager.NewTask(background)
-	go func() {
+	go safe(func() {
 		g.onWorkerAux(f, task)
 		task.Done()
-	}()
+	})
 }
 
 func (g *Gui) onWorkerAux(f func(Task) error, task Task) {
+	err := f(task)
+	if err != nil {
+		g.Update(func(g *Gui) error {
+			return err
+		})
+	}
+}
+
+// safe runs f and closes the screen if f panics, so that the panic is printed
+// to a usable terminal. utils.Safe does the same for the rest of lazygit, but
+// gocui can't use it because utils imports gocui.
+func safe(f func()) {
 	panicking := true
 	defer func() {
 		if panicking && Screen != nil {
@@ -1073,15 +1085,9 @@ func (g *Gui) onWorkerAux(f func(Task) error, task Task) {
 		}
 	}()
 
-	err := f(task)
+	f()
 
 	panicking = false
-
-	if err != nil {
-		g.Update(func(g *Gui) error {
-			return err
-		})
-	}
 }
 
 // A Manager is in charge of GUI's layout and can be used to build widgets.
@@ -1110,7 +1116,7 @@ func (g *Gui) SetManager(managers ...Manager) {
 	g.keybindings = nil
 	g.tabClickBindings = nil
 
-	go func() { g.gEvents <- GocuiEvent{Type: eventResize} }()
+	go safe(func() { g.gEvents <- GocuiEvent{Type: eventResize} })
 }
 
 // SetManagerFunc sets the given manager function. It deletes all views and
@@ -1124,7 +1130,7 @@ func (g *Gui) SetManagerFunc(manager func(*Gui) error) {
 func (g *Gui) MainLoop() error {
 	defer close(g.loopExited)
 
-	go func() {
+	go safe(func() {
 		for {
 			select {
 			case <-g.stop:
@@ -1133,7 +1139,7 @@ func (g *Gui) MainLoop() error {
 				g.gEvents <- g.pollEvent()
 			}
 		}
-	}()
+	})
 
 	Screen.EnableFocus()
 	Screen.EnablePaste()
@@ -1845,7 +1851,7 @@ func (g *Gui) onKey(ev *GocuiEvent) error {
 		if IsMouseKey(ev.Key) {
 			mouseOpts = ViewMouseBindingOpts{
 				X: newX, Y: newY, Key: ev.Key.KeyName(),
-				IsDoubleClick: g.isDoubleClick(newX, newY, ev.Key.KeyName(), v),
+				IsDoubleClick: g.isDoubleClick(newX, newY, ev.Key.KeyName(), v, ev.When),
 			}
 
 			// Dispatch bindings that opt into firing while a popup panel is focused
@@ -1855,7 +1861,7 @@ func (g *Gui) onKey(ev *GocuiEvent) error {
 				return err
 			}
 			if matched {
-				g.recordClickInfo(newX, newY, ev.Key.KeyName(), v)
+				g.recordClickInfo(newX, newY, ev.Key.KeyName(), v, ev.When)
 				return nil
 			}
 		}
@@ -1919,7 +1925,7 @@ func (g *Gui) onKey(ev *GocuiEvent) error {
 		}
 
 		if IsMouseKey(ev.Key) {
-			g.recordClickInfo(newX, newY, ev.Key.KeyName(), v)
+			g.recordClickInfo(newX, newY, ev.Key.KeyName(), v, ev.When)
 			matched, err := g.execMouseKeybindings(v, ev, mouseOpts, false)
 			if err != nil {
 				return err
@@ -1953,8 +1959,10 @@ func (g *Gui) onKey(ev *GocuiEvent) error {
 }
 
 // isDoubleClick reports whether this click follows one just like it, closely
-// enough in time to count as a double click.
-func (g *Gui) isDoubleClick(x, y int, key KeyName, v *View) bool {
+// enough in time to count as a double click. It goes by when the clicks were
+// read. The second click may wait in the event queue while the first one is
+// handled, and that wait doesn't count.
+func (g *Gui) isDoubleClick(x, y int, key KeyName, v *View, when time.Time) bool {
 	return g.lastClick != nil &&
 		!IsMouseScrollKey(key) &&
 		key != MouseRelease &&
@@ -1962,13 +1970,13 @@ func (g *Gui) isDoubleClick(x, y int, key KeyName, v *View) bool {
 		y == g.lastClick.y &&
 		key == g.lastClick.key &&
 		v.Name() == g.lastClick.viewName &&
-		time.Now().Before(g.lastClick.time.Add(DOUBLE_CLICK_THRESHOLD))
+		when.Before(g.lastClick.time.Add(DOUBLE_CLICK_THRESHOLD))
 }
 
 // recordClickInfo remembers this click as the one a following click is compared
 // against. Only the clicks that reach a binding are recorded, so a click the
 // client rejects leaves double-click detection where it was.
-func (g *Gui) recordClickInfo(x, y int, key KeyName, v *View) {
+func (g *Gui) recordClickInfo(x, y int, key KeyName, v *View, when time.Time) {
 	if IsMouseScrollKey(key) {
 		g.lastClick = nil
 		return
@@ -1985,7 +1993,7 @@ func (g *Gui) recordClickInfo(x, y int, key KeyName, v *View) {
 		y:        y,
 		key:      key,
 		viewName: v.Name(),
-		time:     time.Now(),
+		time:     when,
 	}
 }
 
@@ -2199,7 +2207,7 @@ func (g *Gui) Resume() error {
 	// Schedule a redraw of the whole screen. Nothing else guarantees one:
 	// flushes are skipped while suspended, and after re-engaging the screen
 	// the terminal shows nothing until we draw again.
-	go func() { g.gEvents <- GocuiEvent{Type: eventResize} }()
+	go safe(func() { g.gEvents <- GocuiEvent{Type: eventResize} })
 
 	return nil
 }
