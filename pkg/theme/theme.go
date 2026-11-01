@@ -71,6 +71,7 @@ func UpdateTheme(themeConfig config.ThemeConfig) {
 	GocuiSelectedLineBgColor = GetGocuiStyle(themeConfig.SelectedLineBgColor)
 	GocuiInactiveViewSelectedLineBgColor = GetGocuiStyle(themeConfig.InactiveViewSelectedLineBgColor)
 	GocuiSelectedLineFgColor = GetGocuiStyle(themeConfig.SelectedLineFgColor)
+	updateSelectionBarColors(themeConfig)
 	OptionsColor = GetGocuiStyle(themeConfig.OptionsTextColor)
 	OptionsFgColor = GetTextStyle(themeConfig.OptionsTextColor, false)
 
