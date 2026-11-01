@@ -605,9 +605,8 @@
         },
         "sidePanelWidth": {
           "type": "number",
-          "maximum": 1,
           "minimum": 0,
-          "description": "Fraction of the total screen width to use for the left side section. You may want to pick a small number (e.g. 0.2) if you're using a narrow screen, so that you can see more of the main section.\nNumber from 0 to 1.0.",
+          "description": "Fraction of the total screen width to use for the left side section. You may want to pick a small number (e.g. 0.2) if you're using a narrow screen, so that you can see more of the main section. Values greater than 1 are treated as a literal width measured in columns.",
           "default": 0.3333
         },
         "expandFocusedSidePanel": {
@@ -797,6 +796,24 @@
               "uniqueItems": true,
               "description": "Background color of selected line when view doesn't have focus.\nDefault: a suitable RGB grey computed from the terminal's background color."
             },
+            "selectionBarBgColor": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "description": "Background color of the selection bar, which marks the selected lines of a diff in the main view: two columns at each edge of the line, so that the diff keeps its own colors.\nA color made to go behind a whole line of text is easy to miss in two columns, so consider a stronger one here, such as the color of activeBorderColor.\nDefault: the same as selectedLineBgColor."
+            },
+            "selectionBarFgColor": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "description": "Color and attributes of the text under the selection bar, such as the start of a diff's line numbers. Works like selectedLineFgColor. A strong selectionBarBgColor needs a color here too, or that text can become unreadable.\nDefault: the same as selectedLineFgColor."
+            },
             "cherryPickedCommitFgColor": {
               "items": {
                 "type": "string"
@@ -946,6 +963,24 @@
               "uniqueItems": true,
               "description": "Background color of selected line when view doesn't have focus.\nDefault: a suitable RGB grey computed from the terminal's background color."
             },
+            "selectionBarBgColor": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "description": "Background color of the selection bar, which marks the selected lines of a diff in the main view: two columns at each edge of the line, so that the diff keeps its own colors.\nA color made to go behind a whole line of text is easy to miss in two columns, so consider a stronger one here, such as the color of activeBorderColor.\nDefault: the same as selectedLineBgColor."
+            },
+            "selectionBarFgColor": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "description": "Color and attributes of the text under the selection bar, such as the start of a diff's line numbers. Works like selectedLineFgColor. A strong selectionBarBgColor needs a color here too, or that text can become unreadable.\nDefault: the same as selectedLineFgColor."
+            },
             "cherryPickedCommitFgColor": {
               "items": {
                 "type": "string"
@@ -1076,6 +1111,24 @@
               "minItems": 1,
               "uniqueItems": true,
               "description": "Background color of selected line when view doesn't have focus.\nDefault: a suitable RGB grey computed from the terminal's background color."
+            },
+            "selectionBarBgColor": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "description": "Background color of the selection bar, which marks the selected lines of a diff in the main view: two columns at each edge of the line, so that the diff keeps its own colors.\nA color made to go behind a whole line of text is easy to miss in two columns, so consider a stronger one here, such as the color of activeBorderColor.\nDefault: the same as selectedLineBgColor."
+            },
+            "selectionBarFgColor": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "description": "Color and attributes of the text under the selection bar, such as the start of a diff's line numbers. Works like selectedLineFgColor. A strong selectionBarBgColor needs a color here too, or that text can become unreadable.\nDefault: the same as selectedLineFgColor."
             },
             "cherryPickedCommitFgColor": {
               "items": {
@@ -1355,6 +1408,20 @@
           "type": "boolean",
           "description": "If true, when using the panel jump keys (default 1 through 5) and target panel is already active, go to next tab instead",
           "default": false
+        },
+        "cursorStyle": {
+          "type": "string",
+          "enum": [
+            "",
+            "default",
+            "blinkingBlock",
+            "steadyBlock",
+            "blinkingUnderline",
+            "steadyUnderline",
+            "blinkingBar",
+            "steadyBar"
+          ],
+          "description": "Cursor style for text inputs and editable areas.\nOne of: '' (default terminal setting) | 'default' | 'blinkingBlock' | 'steadyBlock' | 'blinkingUnderline' | 'steadyUnderline' | 'blinkingBar' | 'steadyBar'"
         }
       },
       "additionalProperties": false,
@@ -2430,6 +2497,34 @@
             }
           ],
           "default": "="
+        },
+        "collapseDirectory": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          ],
+          "default": "\u003cleft\u003e"
+        },
+        "expandDirectory": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          ],
+          "default": "\u003cright\u003e"
         }
       },
       "additionalProperties": false,

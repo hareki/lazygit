@@ -258,6 +258,13 @@ type ThemeConfig struct {
 	// Background color of selected line when view doesn't have focus.
 	// Default: a suitable RGB grey computed from the terminal's background color.
 	InactiveViewSelectedLineBgColor []string `yaml:"inactiveViewSelectedLineBgColor" jsonschema:"minItems=1,uniqueItems=true"`
+	// Background color of the selection bar, which marks the selected lines of a diff in the main view: two columns at each edge of the line, so that the diff keeps its own colors.
+	// A color made to go behind a whole line of text is easy to miss in two columns, so consider a stronger one here, such as the color of activeBorderColor.
+	// Default: the same as selectedLineBgColor.
+	SelectionBarBgColor []string `yaml:"selectionBarBgColor" jsonschema:"minItems=1,uniqueItems=true"`
+	// Color and attributes of the text under the selection bar, such as the start of a diff's line numbers. Works like selectedLineFgColor. A strong selectionBarBgColor needs a color here too, or that text can become unreadable.
+	// Default: the same as selectedLineFgColor.
+	SelectionBarFgColor []string `yaml:"selectionBarFgColor" jsonschema:"minItems=1,uniqueItems=true"`
 	// Foreground color of copied commit
 	CherryPickedCommitFgColor []string `yaml:"cherryPickedCommitFgColor" jsonschema:"minItems=1,uniqueItems=true"`
 	// Background color of copied commit

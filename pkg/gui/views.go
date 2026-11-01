@@ -235,6 +235,11 @@ func (gui *Gui) configureViewProperties() {
 		(*mapping.viewPtr).SelTextColor = theme.GocuiSelectedLineFgColor
 	}
 
+	for _, view := range []*gocui.View{gui.Views.Main, gui.Views.Secondary} {
+		view.SelBgColor = theme.GocuiSelectionBarBgColor
+		view.SelTextColor = theme.GocuiSelectionBarFgColor
+	}
+
 	gui.Views.MenuFilterFrame.FrameRunes = frameRunesWithTopCorners(frameRunes, teeLeft, teeRight)
 
 	gui.c.SetViewContent(gui.Views.SearchPrefix, gui.c.Tr.SearchPrefix)
