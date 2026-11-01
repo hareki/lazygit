@@ -210,6 +210,21 @@ gui:
     # Default: a suitable RGB grey computed from the terminal's background color.
     inactiveViewSelectedLineBgColor: []
 
+    # Background color of the selection bar, which marks the selected lines of a
+    # diff in the main view: two columns at each edge of the line, so that the diff
+    # keeps its own colors.
+    # A color made to go behind a whole line of text is easy to miss in two columns,
+    # so consider a stronger one here, such as the color of activeBorderColor.
+    # Default: the same as selectedLineBgColor.
+    selectionBarBgColor: []
+
+    # Color and attributes of the text under the selection bar, such as the start of
+    # a diff's line numbers. Works like selectedLineFgColor. A strong
+    # selectionBarBgColor needs a color here too, or that text can become
+    # unreadable.
+    # Default: the same as selectedLineFgColor.
+    selectionBarFgColor: []
+
     # Foreground color of copied commit
     cherryPickedCommitFgColor:
       - blue

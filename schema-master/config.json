@@ -796,6 +796,24 @@
               "uniqueItems": true,
               "description": "Background color of selected line when view doesn't have focus.\nDefault: a suitable RGB grey computed from the terminal's background color."
             },
+            "selectionBarBgColor": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "description": "Background color of the selection bar, which marks the selected lines of a diff in the main view: two columns at each edge of the line, so that the diff keeps its own colors.\nA color made to go behind a whole line of text is easy to miss in two columns, so consider a stronger one here, such as the color of activeBorderColor.\nDefault: the same as selectedLineBgColor."
+            },
+            "selectionBarFgColor": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "description": "Color and attributes of the text under the selection bar, such as the start of a diff's line numbers. Works like selectedLineFgColor. A strong selectionBarBgColor needs a color here too, or that text can become unreadable.\nDefault: the same as selectedLineFgColor."
+            },
             "cherryPickedCommitFgColor": {
               "items": {
                 "type": "string"
@@ -945,6 +963,24 @@
               "uniqueItems": true,
               "description": "Background color of selected line when view doesn't have focus.\nDefault: a suitable RGB grey computed from the terminal's background color."
             },
+            "selectionBarBgColor": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "description": "Background color of the selection bar, which marks the selected lines of a diff in the main view: two columns at each edge of the line, so that the diff keeps its own colors.\nA color made to go behind a whole line of text is easy to miss in two columns, so consider a stronger one here, such as the color of activeBorderColor.\nDefault: the same as selectedLineBgColor."
+            },
+            "selectionBarFgColor": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "description": "Color and attributes of the text under the selection bar, such as the start of a diff's line numbers. Works like selectedLineFgColor. A strong selectionBarBgColor needs a color here too, or that text can become unreadable.\nDefault: the same as selectedLineFgColor."
+            },
             "cherryPickedCommitFgColor": {
               "items": {
                 "type": "string"
@@ -1075,6 +1111,24 @@
               "minItems": 1,
               "uniqueItems": true,
               "description": "Background color of selected line when view doesn't have focus.\nDefault: a suitable RGB grey computed from the terminal's background color."
+            },
+            "selectionBarBgColor": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "description": "Background color of the selection bar, which marks the selected lines of a diff in the main view: two columns at each edge of the line, so that the diff keeps its own colors.\nA color made to go behind a whole line of text is easy to miss in two columns, so consider a stronger one here, such as the color of activeBorderColor.\nDefault: the same as selectedLineBgColor."
+            },
+            "selectionBarFgColor": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "description": "Color and attributes of the text under the selection bar, such as the start of a diff's line numbers. Works like selectedLineFgColor. A strong selectionBarBgColor needs a color here too, or that text can become unreadable.\nDefault: the same as selectedLineFgColor."
             },
             "cherryPickedCommitFgColor": {
               "items": {
