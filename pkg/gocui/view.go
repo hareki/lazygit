@@ -540,13 +540,30 @@ func (v *View) SelectSearchResult(index int) {
 	y := pos.Y
 
 	v.FocusPoint(v.ox, y, true)
-	// A match without a position in the line has nothing to scroll to.
-	if pos.XStart >= 0 {
-		v.scrollColumnsIntoView(pos.XStart, pos.XEnd)
-	}
+	v.scrollSidewaysToSearchResult(pos)
 	v.renderSearchStatus(index, itemCount)
 	if v.searcher.onSelectItem != nil {
 		v.searcher.onSelectItem(v, y)
+	}
+}
+
+// ScrollSidewaysToCurrentSearchResult scrolls the view sideways to show the current
+// match if it isn't on screen. SelectSearchResult does this too, but if the view renders
+// only the lines on screen, a match that was off screen has no position in its line
+// yet. Call this once its line has been rendered.
+func (v *View) ScrollSidewaysToCurrentSearchResult() {
+	v.refreshSearchPositions()
+
+	if len(v.searcher.searchPositions) > 0 {
+		v.scrollSidewaysToSearchResult(v.searcher.searchPositions[v.searcher.currentSearchIndex])
+	}
+}
+
+// scrollSidewaysToSearchResult scrolls the view sideways to show the given match if it
+// isn't on screen. A match without a position in its line has nothing to scroll to.
+func (v *View) scrollSidewaysToSearchResult(pos SearchPosition) {
+	if pos.XStart >= 0 {
+		v.scrollColumnsIntoView(pos.XStart, pos.XEnd)
 	}
 }
 
@@ -557,6 +574,11 @@ func (v *View) GetSearchStatus() (int, int) {
 	return v.searcher.currentSearchIndex, len(v.searcher.searchPositions)
 }
 
+// UpdateSearchResults runs the search for str again, for content or model search results
+// that have changed. It doesn't move the view. The match at the cursor becomes the
+// current one, in the same way as when the cursor moves; see SetNearestSearchPosition.
+// If the view doesn't show a selection, the current match stays the same.
+//
 // modelSearchResults is optional; pass nil to search the view. If non-nil,
 // these positions will be used for highlighting search results. Even in this
 // case the view will still be searched on a per-line basis, so that the caller
@@ -575,32 +597,54 @@ func (v *View) UpdateSearchResults(str string, modelSearchResults []SearchPositi
 	v.searcher.search(str, modelSearchResults)
 	v.updateSearchPositions()
 
-	if len(v.searcher.searchPositions) > 0 {
-		// get the first result past the current cursor
-		currentIndex := 0
-		if v.Highlight {
-			// ...but only if we're showing the highlighted line
-			adjustedY := v.oy + v.cy
-			adjustedX := v.ox + v.cx
-			for i, pos := range v.searcher.searchPositions {
-				if pos.Y > adjustedY || (pos.Y == adjustedY && pos.XStart > adjustedX) {
-					currentIndex = i
-					break
-				}
-			}
-		}
-		v.searcher.currentSearchIndex = currentIndex
+	if v.Highlight && len(v.searcher.searchPositions) > 0 {
+		v.searcher.currentSearchIndex = v.nearestSearchPosition()
 	}
 }
 
+// Search starts a search for str and goes to its first match after the cursor. See
+// UpdateSearchResults for what modelSearchResults is.
 func (v *View) Search(str string, modelSearchResults []SearchPosition) {
-	v.UpdateSearchResults(str, modelSearchResults)
-
-	if len(v.searcher.searchPositions) > 0 {
+	if v.startSearch(str, modelSearchResults) {
 		v.SelectSearchResult(v.searcher.currentSearchIndex)
 	} else {
 		v.renderSearchStatus(0, 0)
 	}
+}
+
+// startSearch runs a new search for str and makes its first match after the cursor the
+// current one. It returns whether there are any matches.
+func (v *View) startSearch(str string, modelSearchResults []SearchPosition) bool {
+	v.writeMutex.Lock()
+	defer v.writeMutex.Unlock()
+
+	v.searcher.search(str, modelSearchResults)
+	v.updateSearchPositions()
+
+	if len(v.searcher.searchPositions) == 0 {
+		return false
+	}
+	if v.Highlight {
+		v.searcher.currentSearchIndex = v.firstSearchPositionAfterCursor()
+	} else {
+		// If the view doesn't show a selection, the search starts at the first match.
+		v.searcher.currentSearchIndex = 0
+	}
+	return true
+}
+
+// firstSearchPositionAfterCursor returns the first match after the cursor, counting one
+// on the cursor's line if it starts right of the cursor. If there is none, it returns
+// the first match, so that the search wraps around.
+func (v *View) firstSearchPositionAfterCursor() int {
+	cursorY := v.oy + v.cy
+	cursorX := v.ox + v.cx
+	for i, pos := range v.searcher.searchPositions {
+		if pos.Y > cursorY || (pos.Y == cursorY && pos.XStart > cursorX) {
+			return i
+		}
+	}
+	return 0
 }
 
 func (v *View) ClearSearch() {
@@ -611,8 +655,15 @@ func (v *View) IsSearching() bool {
 	return v.searcher.searchString != ""
 }
 
+// nearestSearchPosition returns the current match if it is on the cursor's line.
+// Otherwise it returns the first match on that line, or else the last match above it,
+// or the first match if there is none above.
 func (v *View) nearestSearchPosition() int {
 	currentLineIndex := v.cy + v.oy
+	if v.searcher.searchPositions[v.searcher.currentSearchIndex].Y == currentLineIndex {
+		return v.searcher.currentSearchIndex
+	}
+
 	lastSearchPos := 0
 	for i, pos := range v.searcher.searchPositions {
 		if pos.Y == currentLineIndex {
@@ -702,11 +753,12 @@ func calculateNewOrigin(selectedLine int, oldOrigin int, lineCount int, viewHeig
 	return oldOrigin
 }
 
+// search sets what to search for. It leaves the current match for the caller to choose
+// once the positions have been worked out.
 func (s *searcher) search(str string, modelSearchResults []SearchPosition) {
 	s.searchString = str
 	s.searchPositions = []SearchPosition{}
 	s.modelSearchResults = modelSearchResults
-	s.currentSearchIndex = 0
 }
 
 func (s *searcher) clearSearch() {
